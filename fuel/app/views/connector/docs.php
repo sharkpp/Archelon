@@ -64,7 +64,7 @@
           <h4>ステータスコード</h4>
           <p><code id="status_<?php echo $name; ?>"></code></p>
           <h4>レスポンス</h4>
-          <p><pre style="padding: 0; "><code style="padding: 0; " id="response_<?php echo $name; ?>"></code></pre></p>
+          <p><pre style="padding: 0; " class="pre-scrollable"><code style="padding: 0; " id="response_<?php echo $name; ?>"></code></pre></p>
         </div>
       </div>
     </div>

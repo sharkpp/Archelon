@@ -17,9 +17,9 @@
             target: $(this).attr('id').replace('form_', ''),
             dataType: 'json',
             success: function(data, dataType){
-              json = JSON.stringify(data, undefined, 4);
 console.log(this);
 console.log(data);
+              json = JSON.stringify(data, undefined, 4);
               $('#request_' + this.target)
                 .html(this.url);
               $('#results_' + this.target)
@@ -28,9 +28,14 @@ console.log(data);
                 .html(200);
               $('#response_' + this.target)
                 .addClass('json')
-                .html(hljs.highlight('json', json).value);
+                .html('*')
+                .html(json ? hljs.highlight('json', json).value : '');
             },
             error: function(XMLHttpRequest, textStatus, errorThrown){
+console.log(XMLHttpRequest);
+console.log(errorThrown);
+console.log(this);
+              json = JSON.stringify(XMLHttpRequest.responseJSON, undefined, 4);
               $('#request_' + this.target)
                 .html(this.url);
               $('#results_' + this.target)
@@ -38,10 +43,9 @@ console.log(data);
               $('#status_' + this.target)
                 .html(XMLHttpRequest.status);
               $('#response_' + this.target)
-                .html(textStatus);
-console.log(XMLHttpRequest);
-console.log(errorThrown);
-console.log(this);
+                .addClass('json')
+                .html('*')
+                .html(json ? hljs.highlight('json', json).value : '');
             },
           });
           return false;
