@@ -61,10 +61,16 @@
           <h3>結果</h3>
           <h4>リクエストURL</h4>
           <p><code id="request_<?php echo $name; ?>"></code></p>
-          <h4>ステータスコード</h4>
-          <p><code id="status_<?php echo $name; ?>"></code></p>
-          <h4>レスポンス</h4>
-          <p><pre style="padding: 0; " class="pre-scrollable"><code style="padding: 0; " id="response_<?php echo $name; ?>"></code></pre></p>
+          <div id="results_wait_<?php echo $name; ?>" style="display:none;">
+            <h4>レスポンス</h4>
+            <p><?php echo Asset::img("preloader.gif"); ?> しばらくお待ちください...</p>
+          </div>
+          <div id="results_response_<?php echo $name; ?>" style="display:none;">
+            <h4>ステータスコード</h4>
+            <p><code id="status_<?php echo $name; ?>"></code></p>
+            <h4>レスポンス</h4>
+            <p><pre style="padding: 0; " class="pre-scrollable"><code style="padding: 0; " id="response_<?php echo $name; ?>"></code></pre></p>
+          </div>
         </div>
       </div>
     </div>
