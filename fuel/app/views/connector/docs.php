@@ -33,7 +33,7 @@
 <?php foreach ($info['parameters'] as $param_name => $param_info): ?>
             <tr>
               <td><?php echo $param_name; ?></td>
-              <td><input name="<?php echo $param_name; ?>" value="<?php echo $param_info['value']; ?>"></td>
+              <td><input name="<?php echo $param_name; ?>" value="<?php echo $param_info['value']; ?>" data-param-type="<?php echo $param_info['param_type']; ?>"></td>
               <td><?php echo $param_info['description']; ?></td>
               <td><?php echo $param_info['param_type']; ?></td>
               <td><?php echo $param_info['data_type']; ?></td>
@@ -61,10 +61,10 @@
           <h3>結果</h3>
           <h4>リクエストURL</h4>
           <p><code id="request_<?php echo $name; ?>"></code></p>
-          <h4>レスポンス</h4>
-          <p><code id="response_<?php echo $name; ?>"></code></p>
           <h4>ステータスコード</h4>
           <p><code id="status_<?php echo $name; ?>"></code></p>
+          <h4>レスポンス</h4>
+          <p><pre style="padding: 0; "><code style="padding: 0; " id="response_<?php echo $name; ?>"></code></pre></p>
         </div>
       </div>
     </div>

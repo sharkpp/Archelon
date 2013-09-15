@@ -12,6 +12,7 @@
     <?php echo Asset::css("bootstrap${postfix}.css"); ?>
     <?php echo Asset::css("bootstrap-responsive${postfix}.css"); ?>
     <?php echo Asset::css("font-awesome${postfix}.css"); ?>
+    <?php echo Asset::css("highlight/github.css"); ?>
     <style type="text/css">
       body {
         padding-top: 60px;
@@ -137,6 +138,7 @@
     <!-- Placed at the end of the document so the pages load faster -->
     <?php echo Asset::js("jquery-1.10.1${postfix}.js"); ?>
     <?php echo Asset::js("bootstrap${postfix}.js"); ?>
+    <?php echo Asset::js("highlight-7.3.min.js"); ?>
     <?php echo isset($script) ? $script : ''; ?>
 
   </body>
