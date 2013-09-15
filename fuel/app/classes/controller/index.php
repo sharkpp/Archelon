@@ -36,8 +36,7 @@ class Controller_Index extends Controller_Base
 					'connector' => $account->connector->name,
 					'id' => $account->id,
 					'description' => unserialize($account->description),
-					'api_key' => Connector::get_api_key(base64_decode($account->salt) .
-					                                    base64_decode(\Auth::instance()->get_profile_fields('salt', 'XXX'))),
+					'api_key' => $account->api_key,
 				);
 		}
 

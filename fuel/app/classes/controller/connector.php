@@ -63,8 +63,21 @@ class Controller_Connector extends Controller_Base
 		$connector_class = Inflector::words_to_upper($connector_name).'\\Connector';
 		$connector = new $connector_class;
 
+		$account = Model_Account::find($id);
+
 		$data['connector'] = $connector_name;
 		$data['specs'] = $connector->get_api_spec();
+
+		foreach ($data['specs'] as &$spec)
+		{
+			foreach ($spec['parameters'] as &$param)
+			{
+				if ('API_KEY' == $param['data_type'])
+				{
+					$param['value'] = $account->api_key;
+				}
+			}
+		}
 
 		$this->template->breadcrumb = array('APIドキュメント' => '', 'APIドキュメント' => '', 'aaa' => '');
 		$this->template->title = implode(' &raquo; ', array_keys($this->template->breadcrumb));

@@ -8,7 +8,7 @@ class Model_Account extends \Orm\Model_Soft
 		'connector_id',
 		'connector_id',
 		'description',
-		'salt',
+		'api_key',
 		'created_at',
 		'updated_at',
 		'deleted_at',
@@ -47,12 +47,17 @@ class Model_Account extends \Orm\Model_Soft
 
 	public function _event_before_insert()
 	{
-		// salt‚ğ‰Šú‰»
+		// API KEY ‚ğ‰Šú‰»
 		$salt_ = '';
 		for ($i = 0; $i < 8; $i++)
 		{
 			$salt_ .= pack('n', mt_rand(0, 0xFFFF));
 		}
-		$this->salt = base64_encode($salt_);
+
+		$crypto_key = \Config::get('crypt.crypto_key', null);
+		$blowfish_salt_type = version_compare('5.3.7', PHP_VERSION, '<=') ? '$2y' : '$2a';
+		$api_key = crypt($salt_, $blowfish_salt_type.'$02$'.md5($crypto_key).'$');
+
+		$this->api_key = md5( $api_key . base64_decode(\Auth::instance()->get_profile_fields('salt', 'XXX')) );
 	}
 }
