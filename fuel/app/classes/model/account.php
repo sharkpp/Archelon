@@ -8,6 +8,7 @@ class Model_Account extends \Orm\Model_Soft
 		'connector_id',
 		'connector_id',
 		'description',
+		'salt',
 		'created_at',
 		'updated_at',
 		'deleted_at',
@@ -21,6 +22,12 @@ class Model_Account extends \Orm\Model_Soft
 		'Orm\Observer_UpdatedAt' => array(
 			'events' => array('before_update'),
 			'mysql_timestamp' => true,
+		),
+		'Orm\\Observer_Self' => array(
+			'events' => array('before_insert')
+		),
+		'Observer_UserId' => array(
+			'events' => array('before_save')
 		),
 	);
 
@@ -38,4 +45,14 @@ class Model_Account extends \Orm\Model_Soft
 	);
 	protected static $_table_name = 'accounts';
 
+	public function _event_before_insert()
+	{
+		// salt‚ğ‰Šú‰»
+		$salt_ = '';
+		for ($i = 0; $i < 8; $i++)
+		{
+			$salt_ .= pack('n', mt_rand(0, 0xFFFF));
+		}
+		$this->salt = base64_encode($salt_);
+	}
 }

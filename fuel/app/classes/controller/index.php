@@ -27,9 +27,22 @@ class Controller_Index extends Controller_Base
 						->where('user_id', \Auth::instance()->get_user_id()[1])
 					//	->related('connector')
 						->get();
-		$data['accounts'] = $accounts;
+
+		$data['accounts'] = array();
+		foreach ($accounts as $account)
+		{
+			$data['accounts'][] = array(
+					'title' => $account->connector->screen_name,
+					'connector' => $account->connector->name,
+					'id' => $account->id,
+					'description' => unserialize($account->description),
+					'api_key' => Connector::get_api_key(base64_decode($account->salt) .
+					                                    base64_decode(\Auth::instance()->get_profile_fields('salt', 'XXX'))),
+				);
+		}
 
 		$this->template->content = View::forge('index/dashboard', $data);
+		$this->template->content->set_safe('accounts', $data['accounts']);
 	}
 
 	public function action_signup()
@@ -56,11 +69,22 @@ class Controller_Index extends Controller_Base
 			{
 				try
 				{
+					// saltを初期化
+					$salt = '';
+					for ($i = 0; $i < 8; $i++)
+					{
+						$salt .= pack('n', mt_rand(0, 0xFFFF));
+					}
+					$salt = base64_encode($salt);
+
 					if (false !== Auth::create_user(
 									$val->validated('username'),
 									$val->validated('password'),
 									$val->validated('email'),
-									Auth\Model\Auth_User::query()->count() ? 1 : 100 // 一人もいない場合は管理者とする
+									Auth\Model\Auth_User::query()->count() ? 1 : 100, // 一人もいない場合は管理者とする
+									array(
+										'salt' => $salt,
+									)
 								))
 					{
 						if (Auth::login())

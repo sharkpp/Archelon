@@ -13,9 +13,12 @@ abstract class Connector
 
 	abstract public function get_api_spec();
 
+	// コネクタのIDを取得
 	public static function get_connector_id($connector_name = null)
 	{
-		if ('connector' == \Uri::segment(1))
+		if ('connector' == \Uri::segment(1) ||
+			'api' == \Uri::segment(1) ||
+			'docs' == \Uri::segment(1))
 		{
 			$connector_name = \Uri::segment(2);
 		}
@@ -36,6 +39,18 @@ abstract class Connector
 		return $connector->id;
 	}
 
+	// APIキーを取得
+	public static function get_api_key($salt)
+	{
+		$salt_ = \Config::get('crypt.crypto_key', null);
+
+		$blowfish_salt_type = version_compare('5.3.7', PHP_VERSION, '<=') ? '$2y' : '$2a';
+		$api_ke = md5(crypt($salt, $blowfish_salt_type.'$'.self::BLOWFISH_COST.'$'.md5($salt_).'$'));
+		
+		return $api_ke;
+	}
+
+	// 暗号化
 	public static function encrypt($data, &$salt)
 	{
 		$salt_ = '';
@@ -56,6 +71,7 @@ abstract class Connector
 		return base64_encode(\Crypt::encode($data, $key));
 	}
 
+	// 復号化
 	public static function decrypt($data, $salt)
 	{
 		$salt_ = base64_decode($salt);
