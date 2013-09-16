@@ -35,4 +35,8 @@ APIの確認の方法です。
 ## ライセンス
 
 Copyright(c) 2013 sharkpp All rights reserved.
-このパッケージは、The MIT License の元で公開されています。
+このアプリケーションは、The MIT License の元で公開されています。
+
+Archelon.svg および archelon-bg は [File:Archelon BW.jpg - Wikimedia Commons](http://commons.wikimedia.org/wiki/File:Archelon_BW.jpg?uselang=ja) を元に作成されました。
+これらのファイルは クリエイティブ・コモンズ 表示-継承 3.0 非移植 (CC by-sa 3.0) の元で公開されています。
+

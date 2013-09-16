@@ -1,4 +1,11 @@
-<!-- Main hero unit for a primary marketing message or call to action -->
+<style type="text/css">
+body {
+	background-image: url(<?php echo Asset::get_file('archelon-bg.png', 'img'); ?>);
+	background-repeat: no-repeat;
+	background-position: center center;
+}
+</style>
+
 <div class="hero-unit">
   <h1>Archelonへようこそ!</h1>
   <p>Archelon は アカウントアグリゲーションサービスの一種です。RESTful APIなどなどウェブAPIを用意していないウェブアプリケーションにAPIを追加するシステムです。</p>

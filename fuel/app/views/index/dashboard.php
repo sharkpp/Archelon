@@ -1,3 +1,11 @@
+<style type="text/css">
+body {
+	background-image: url(<?php echo Asset::get_file('archelon-bg.png', 'img'); ?>);
+	background-repeat: no-repeat;
+	background-position: center 50px;
+}
+</style>
+
 <h1>登録済みウェブアプリケーション</h1>
 <hr>
 

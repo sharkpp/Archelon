@@ -14,9 +14,10 @@
     <?php echo Asset::css("font-awesome${postfix}.css"); ?>
     <?php echo Asset::css("highlight/github.css"); ?>
     <style type="text/css">
-      body {
-        padding-top: 60px;
-        padding-bottom: 40px;
+      @media (min-width: 980px) {
+        body {
+          padding-top: 60px;
+        }
       }
     </style>
 
