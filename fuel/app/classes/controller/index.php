@@ -102,7 +102,7 @@ class Controller_Index extends Controller_Base
 					case 3: $data['username_error_message'] = $e->getMessage(); break;
 					}
 				}
-				catch (Exception $e)
+				catch (\Exception $e)
 				{
 					\Log::error($e->getMessage());
 					$data['error_message'] = 'エラーが発生しました';

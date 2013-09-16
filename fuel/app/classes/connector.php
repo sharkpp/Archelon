@@ -51,14 +51,21 @@ abstract class Connector
 	}
 
 	// 暗号化
-	public static function encrypt($data, &$salt)
+	public static function encrypt($data, &$salt, $update_salt = false)
 	{
-		$salt_ = '';
-		for ($i = 0; $i < 8; $i++)
+		if (!$update_salt)
 		{
-			$salt_ .= pack('n', mt_rand(0, 0xFFFF));
+			$salt_ = base64_decode($salt);
 		}
-		$salt = base64_encode($salt_);
+		else
+		{
+			$salt_ = '';
+			for ($i = 0; $i < 8; $i++)
+			{
+				$salt_ .= pack('n', mt_rand(0, 0xFFFF));
+			}
+			$salt = base64_encode($salt_);
+		}
 
 		$crypto_key = \Config::get('crypt.crypto_key', null);
 		if (is_null($crypto_key))

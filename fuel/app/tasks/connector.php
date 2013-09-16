@@ -123,7 +123,7 @@ class Connector
 
 				\DB::commit_transaction();
 			}
-			catch (Exception $e)
+			catch (\Exception $e)
 			{
 				\DB::rollback_transaction();
 			}

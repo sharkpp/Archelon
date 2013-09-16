@@ -113,7 +113,7 @@ class Config_Db implements \Config_Interface
 
 			return true;
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			\DB::rollback_transaction();
 

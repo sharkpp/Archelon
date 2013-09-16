@@ -1,6 +1,12 @@
 <h1>登録済みウェブアプリケーション</h1>
 <hr>
 
+<?php if (empty($accounts)): ?>
+<div class="alert alert-info">
+  登録済みウェブアプリケーションは存在しません。
+  「<a href="<?php echo Uri::create('account/connect') ?>">アカウント追加</a>」から登録してください。
+</div>
+<?php else: ?>
 <div class="row">
 <?php foreach ($accounts as $account): ?>
   <div class="span4">
@@ -35,3 +41,4 @@
   </div>
 <?php endforeach; ?>
 </div>
+<?php endif; ?>
