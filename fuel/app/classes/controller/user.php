@@ -31,4 +31,15 @@ class Controller_User extends Controller_Base
 		$this->template->content = View::forge('user/delete', $data);
 	}
 
+	public function action_config($id = null)
+	{
+		
+		$data = array();
+
+
+		$this->template->breadcrumb = array('設定' => 'user/config');
+		$this->template->title = implode(' &raquo; ', array_keys($this->template->breadcrumb));
+		$this->template->content = View::forge('user/config', $data);
+	}
+
 }

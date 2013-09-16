@@ -69,7 +69,7 @@
               <li class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-user"></i> <?php echo Auth::instance()->get_screen_name(); ?> <b class="caret"></b></a>
                 <ul class="dropdown-menu">
-                  <li><a href="#"><i class="icon-cog"></i> 設定</a></li>
+                  <li><a href="<?php echo Uri::create('user/config'); ?>"><i class="icon-cog"></i> 設定</a></li>
                   <li class="divider"></li>
                   <li><a href="<?php echo Uri::create('signout'); ?>"><i class="icon-signout"></i> サインアウト</a></li>
                 </ul>

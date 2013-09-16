@@ -9,7 +9,7 @@
 <?php else: ?>
 <div class="row">
 <?php foreach ($accounts as $account): ?>
-  <div class="span4">
+  <div class="span5">
     <div class="well well-small">
       <ul class="nav nav-pills">
         <li class="dropdown">
@@ -20,7 +20,7 @@
             <li><a href="<?php echo Uri::create('docs/:name/api/:id', array('name' => $account['connector'], 'id' => $account['id'])); ?>"
                ><i class="icon-question"></i> 使い方(APIドキュメント)</a></li>
             <li class="divider"></li>
-            <li><a href="<?php echo Uri::create('connector/:name/account/delete', array('name' => $account['connector'])); ?>"
+            <li><a href="<?php echo Uri::create('connector/:name/account/disconnect/:id', array('name' => $account['connector'], 'id' => $account['id'])); ?>"
                ><i class="icon-trash"></i> 削除</a></li>
           </ul>
         </li>
@@ -42,3 +42,16 @@
 <?php endforeach; ?>
 </div>
 <?php endif; ?>
+
+<div id="modal_account_delete" class="modal hide fade" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+  <div class="modal-header">
+    <h3>アカウントの削除</h3>
+  </div>
+  <div class="modal-body">
+    <p></p>
+  </div>
+  <div class="modal-footer">
+    <a href="#" class="btn">はい</a>
+    <a href="#" class="btn btn-primary" data-dismiss="modal" aria-hidden="true">いいえ</a>
+  </div>
+</div>

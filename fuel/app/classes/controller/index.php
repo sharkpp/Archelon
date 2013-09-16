@@ -40,6 +40,7 @@ class Controller_Index extends Controller_Base
 				);
 		}
 
+		$this->template->script  = View::forge('index/dashboard.js');
 		$this->template->content = View::forge('index/dashboard', $data);
 		$this->template->content->set_safe('accounts', $data['accounts']);
 	}

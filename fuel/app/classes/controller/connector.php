@@ -30,13 +30,10 @@ class Controller_Connector extends Controller_Base
 		$q = \Model_Connector::query();
 		foreach($q->get() as $row)
 		{
-			Module::load($row->name);
-			$connector_class = Inflector::words_to_upper($row->name).'\\Connector';
-			$connector = new $connector_class;
 			$connectors[] = array(
 					'connector'   => $row->name,
-					'name'        => $connector->get_screen_name(),
-					'description' => $connector->get_description(),
+					'name'        => $row->screen_name,
+					'description' => $row->description,
 				);
 		}
 
