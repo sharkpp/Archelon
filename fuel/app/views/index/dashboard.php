@@ -23,12 +23,12 @@ body {
         <li class="dropdown">
           <a class="dropdown-toggle" data-toggle="dropdown" href="#"><h2 style="display: inline;"><?php echo $account['title']; ?></h2> <b class="caret"></b></a>
           <ul class="dropdown-menu">
-            <li><a href="<?php echo Uri::create('connector/:name/account/edit/:id', array('name' => $account['connector'], 'id' => $account['id'])); ?>"
+            <li><a href="<?php echo Uri::create('account/edit/:id', array('id' => $account['id'])); ?>"
                ><i class="icon-pencil"></i> 編集</a></li>
             <li><a href="<?php echo Uri::create('docs/:name/api/:id', array('name' => $account['connector'], 'id' => $account['id'])); ?>"
                ><i class="icon-question"></i> 使い方(APIドキュメント)</a></li>
             <li class="divider"></li>
-            <li><a href="<?php echo Uri::create('connector/:name/account/disconnect/:id', array('name' => $account['connector'], 'id' => $account['id'])); ?>"
+            <li><a href="<?php echo Uri::create('account/disconnect/:id', array('id' => $account['id'])); ?>"
                ><i class="icon-trash"></i> 削除</a></li>
           </ul>
         </li>

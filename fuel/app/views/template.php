@@ -52,7 +52,7 @@
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-cog"></i> 管理 <b class="caret"></b></a>
                 <ul class="dropdown-menu">
                   <li><a href="<?php echo Uri::create('connector/reload'); ?>" data-toggle="modal" data-target="#modal_connector_reload"><i class="icon-refresh"></i> コネクタの再読み込み</a></li>
-                  <li><a href="<?php echo Uri::create('connector/config'); ?>"><i class="icon-cog"></i> コネクタの管理</a></li>
+                  <li><a href="<?php echo Uri::create('connector/admin'); ?>"><i class="icon-cog"></i> コネクタの管理</a></li>
 <!--
                   <li><a href="#">Another action</a></li>
                   <li><a href="#">Something else here</a></li>

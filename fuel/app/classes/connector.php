@@ -5,13 +5,58 @@
 
 abstract class Connector
 {
-	const BLOWFISH_COST = '03';
+	protected $connector_id = null;
 
-	abstract public function get_screen_name();
+	// コネクタ情報の取得
+	abstract public function get_connector_spec();
 
-	abstract public function get_description();
-
+	// API情報の取得
 	abstract public function get_api_spec();
+
+	// 登録情報フォームの取得
+	abstract public function get_account_form($id = null);
+
+	// 登録情報の更新
+	abstract public function save_account($validation, $id);
+
+	// コネクタ設定フォームの取得
+	abstract public function get_config_form();
+
+	// 登録情報の更新
+	abstract public function save_config($validation);
+
+	// 
+	public static function forge($connector_id)
+	{
+		$q = \Model_Connector::query();
+		if (is_numeric($connector_id))
+		{ // コネクタIDで検索
+			$q = $q->where('id', $connector_id);
+		}
+		else
+		{ // コネクタ名で検索
+			$q = $q->where('name', $connector_id);
+		}
+
+		if (!($connector = $q->get_one()))
+		{
+			return false;
+		}
+
+		\Module::load($connector->name);
+		$connector_class = \Inflector::words_to_upper($connector->name).'\\Connector';
+
+		try
+		{
+			$inst = new $connector_class;
+			$inst->connector_id = $connector->id;
+			return $inst;
+		}
+		catch (\Exception $e)
+		{
+			return false;
+		}
+	}
 
 	// コネクタのIDを取得
 	public static function get_connector_id($connector_name = null)
@@ -45,7 +90,7 @@ abstract class Connector
 		$salt_ = \Config::get('crypt.crypto_key', null);
 
 		$blowfish_salt_type = version_compare('5.3.7', PHP_VERSION, '<=') ? '$2y' : '$2a';
-		$api_ke = md5(crypt($salt, $blowfish_salt_type.'$'.self::BLOWFISH_COST.'$'.md5($salt_).'$'));
+		$api_ke = md5(crypt($salt, $blowfish_salt_type.'$03$'.md5($salt_).'$'));
 		
 		return $api_ke;
 	}
@@ -71,7 +116,7 @@ abstract class Connector
 		if (is_null($crypto_key))
 		{
 			$blowfish_salt_type = version_compare('5.3.7', PHP_VERSION, '<=') ? '$2y' : '$2a';
-			$crypto_key = crypt(sha1($salt_), $blowfish_salt_type.'$'.self::BLOWFISH_COST.'$'.md5($salt_).'$');
+			$crypto_key = crypt(sha1($salt_), $blowfish_salt_type.'$03$'.md5($salt_).'$');
 		}
 		$key = $salt_ . $crypto_key;
 
@@ -87,7 +132,7 @@ abstract class Connector
 		if (is_null($crypto_key))
 		{
 			$blowfish_salt_type = version_compare('5.3.7', PHP_VERSION, '<=') ? '$2y' : '$2a';
-			$crypto_key = crypt(sha1($salt_), $blowfish_salt_type.'$'.self::BLOWFISH_COST.'$'.md5($salt_).'$');
+			$crypto_key = crypt(sha1($salt_), $blowfish_salt_type.'$03$'.md5($salt_).'$');
 		}
 		$key = $salt_ . $crypto_key;
 

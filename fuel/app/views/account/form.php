@@ -1,4 +1,8 @@
-<h1><?php echo $connector_name; ?> コネクタの設定</h1>
+<?php if (isset($save) && $save): ?>
+<h1><?php echo $connector_name; ?> のアカウントを編集</h1>
+<?php else: ?>
+<h1><?php echo $connector_name; ?> のアカウントを追加</h1>
+<?php endif; ?>
 <hr>
 
 <form class="form-horizontal" method="post">
@@ -29,7 +33,11 @@
 <?php endforeach; ?>
   <div class="control-group">
     <div class="controls">
+<?php if (isset($save) && $save): ?>
       <button type="submit" class="btn btn-primary">保存</button>
+<?php else: ?>
+      <button type="submit" class="btn btn-primary">追加</button>
+<?php endif; ?>
     </div>
   </div>
 </form>

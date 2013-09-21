@@ -1,0 +1,171 @@
+# コネクタ仕様
+
+この文書では、Archelon で使用できるコネクタの仕様を記載しています。
+
+## ディレクトリレイアウトと必須ファイル
+
+コネクタ名は例として ```forum``` をサンプルにしています。
+
+      forum/
+      + classes/
+      | + controller/
+      | + model/
+      | | + forum/
+      | + view/
+      | + connector.php ※ \Connector から派生すること
+      + config/
+      + lang/
+      + migrations/
+      + tasks/
+      + views/
+
+## 実装の制限
+
+* URLは ```/connector/コネクタ名/account/*``` で ```classes/controller/account.php``` が、
+  ```/connector/コネクタ名/admin/*``` で ```classes/controller/admin.php``` が、
+  ```/api/コネクタ名/*``` で ```classes/controller/*``` がマッピングされています。。
+* ```classes/connector.php``` は \Connector から派生し必須となるインターフェースを実装すること。
+* ```classes/controller/account.php``` および ```classes/controller/admin.php``` は ```\Controller_Connector_Base``` から派生すること。
+* ORMモデルは衝突回避のため ```Model_Forum_User``` つまり、コネクタ名をモデルの名前に含むこと。
+
+## Controller_Account クラス
+
+下記のアクションの実装が必要です。
+
+* action_connect()
+* action_edit($id)
+* action_disconnect()
+
+## Controller_Admin クラス
+
+下記のアクションの実装が必要です。
+
+* action_config()
+
+## Connector インターフェース
+
+### コネクタ情報の取得
+
+このメソッドの結果を元に各ページのコネクタ名や説明を表示します。
+
+#### インターフェース
+
+      public function get_connector_spec();
+
+#### 戻り値
+
+        return array(
+                    'screen_name' => 'コネクタの表示名',
+                    'description' => 'コネクタの説明',
+                );
+
+### API情報の取得
+
+このメソッドの結果を元にドキュメントページを構築します。
+
+#### インターフェース
+
+      public function get_api_spec();
+
+#### 戻り値
+
+        return array(
+                'user' => array( // API名
+                    'method' => 'GET', // 要求種別(GET|POST)
+                    'path' => 'v1/user/{userId}', // パス(※コネクタ名などは除く)
+                    'title' => 'ユーザーの取得', // タイトル
+                    'description' => 'ユーザーの取得', // 説明
+                    'parameters' => array( // 要求パラメータ
+                        'userId' => array( // キー名(param_type='path'の場合 '{'+キー名+'}' を置換して問い合わせます)
+                            'description' => 'ユーザーID', // 説明
+                            'value'       => '', // デフォルト値
+                            'required'    => false, // 必須項目か？
+                            'param_type'  => 'path', // 種別(query|path)
+                            'data_type'   => 'integer', // データ種別(string|integer|API_KEY)
+                        ),
+                        'key' => array(
+                            'description' => 'APIキー',
+                            'value'       => 'デフォルト値',
+                            'required'    => true,
+                            'param_type'  => 'query',
+                            'data_type'   => 'API_KEY',
+                        ),
+                    ),
+                    'status_codes' => array( // 要求結果で戻りうるHTTPステータスコードと意味
+                        200 => array( 'reason' => '成功' ),
+                        401 => array( 'reason' => '認証に失敗' ),
+                        403 => array( 'reason' => 'アクセス権限がない' ),
+                        404 => array( 'reason' => 'ユーザーが見つからない' ),
+                    ),
+                ),
+                // 以下、API分繰り返す
+            );
+
+### 登録情報フォームの取得
+
+このメソッドの結果を元にアカウント追加ページを構築します。
+更新時に新規作成時にない項目を追加として出してもOK。
+[Creating models - Orm Package - FuelPHP Documentation](http://fuelphp.com/docs/packages/orm/creating_models.html#/propperties) を参考
+
+#### インターフェース
+
+      public function get_account_form($id = null);
+
+#### 戻り値
+
+        return array(
+                'user' => array(
+                    'label' => 'ユーザー名', // 画面に表示するラベル
+                    'validation' => array('required', 'min_length' => array(3), 'max_length' => array(20)),
+                    'form' => array('type' => 'text'),
+                    'default' => 'New article', // ※すでに登録済みの場合は
+                ),
+                '@script' => "alert('test')", // 追加でスクリプトが必要であれば
+            );
+
+### 登録情報の更新
+
+登録情報を新規に追加もしくは更新します。
+
+#### インターフェース
+
+      public function save_account($id, $validation);
+
+#### 戻り値
+
+* true 登録成功
+* false 登録失敗 ※例外を通知
+
+### コネクタ設定フォームの取得
+
+このメソッドの結果を元にコネクタ設定ページを構築します。
+[Creating models - Orm Package - FuelPHP Documentation](http://fuelphp.com/docs/packages/orm/creating_models.html#/propperties) を参考
+
+#### インターフェース
+
+      public function get_config_form();
+
+#### 戻り値
+
+        return array(
+                'user' => array(
+                    'label' => 'ユーザー名', // 画面に表示するラベル
+                    'validation' => array('required', 'min_length' => array(3), 'max_length' => array(20)),
+                    'form' => array('type' => 'text'),
+                    'default' => 'New article', // ※すでに登録済みの場合は
+                ),
+                '@script' => "alert('test')", // 追加でスクリプトが必要であれば
+            );
+
+### 登録情報の更新
+
+設定を更新します。
+
+#### インターフェース
+
+      public function save_config($validation);
+
+#### 戻り値
+
+* true 登録成功
+* false 登録失敗 ※例外を通知

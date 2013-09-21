@@ -18,7 +18,7 @@
       <h2><?php echo $connector['name']; ?></h2>
       <p><?php echo $connector['description']; ?></p>
       <a class="btn btn-large btn-block"
-         href="<?php echo Uri::create('connector/:name/account/connect', array('name' => $connector['connector'])); ?>"
+         href="<?php echo Uri::create('account/connect/:id', array('id' => $connector['id'])); ?>"
          ><i class="icon-plus"></i> 追加</a>
     </div>
   </div>

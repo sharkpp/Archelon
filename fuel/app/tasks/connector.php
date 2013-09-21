@@ -80,12 +80,13 @@ class Connector
 				\Module::load($name);
 				$connector_class = \Inflector::words_to_upper($name).'\\Connector';
 				$connector = new $connector_class;
+				$connector_spec = $connector->get_connector_spec();
 				// 追加対象を更新
 				$new_connectors[] = array(
 										'id'          => $connector_id,
 										'name'        => $name,
-										'screen_name' => $connector->get_screen_name(),
-										'description' => $connector->get_description()
+										'screen_name' => \Arr::get($connector_spec, 'screen_name', $name),
+										'description' => \Arr::get($connector_spec, 'description', ''),
 									);
 			}
 		}
