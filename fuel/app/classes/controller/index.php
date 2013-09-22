@@ -5,9 +5,13 @@ class Controller_Index extends Controller_Base
 
 	public function action_index()
 	{
-		try
-		{
-			if (Auth::check())
+	//	try
+	//	{
+			if (!self::installed())
+			{
+				Response::redirect('setup');
+			}
+			else if (Auth::check())
 			{
 				$this->action_dashboard();
 			}
@@ -15,17 +19,16 @@ class Controller_Index extends Controller_Base
 			{
 				$this->action_welcome();
 			}
-		}
-		catch (\Exception $e)
-		{
-			// マイグレーションされている？
-			if (!self::installed())
-			{
-				Response::redirect('setup');
-			}
-
-			throw $e;
-		}
+	//	}
+	//	catch (\Exception $e)
+	//	{
+	//		// マイグレーションされている？
+	//		if (!self::installed())
+	//		{
+	//			Response::redirect('setup');
+	//		}
+	//		throw $e;
+	//	}
 	}
 
 	public function action_404()
@@ -38,7 +41,7 @@ class Controller_Index extends Controller_Base
 	{
 		$data = array();
 
-		Config::load('db', 'db');
+		Config::load('db', true);
 
 		if ($dsn = Config::get('db.default.connection.dsn', ''))
 		{ // 'pgsql:host=localhost;dbname=fuel_db',
@@ -154,42 +157,70 @@ class Controller_Index extends Controller_Base
 			// 入力内容の検証
 			if ($validator->run())
 			{
-				$db_connection = $validator->$validated('db_connection');
+				// 設定に反映
+				$db_connection = $validator->validated('db_connection');
 				switch ($db_connection)
 				{
 				case 'mysql':
 				case 'mysqli':
 					Config::set('db.default.type',                $db_connection);
-					Config::set('db.default.connection.hostname', $validator->$validated('db_hostname'));
-					Config::set('db.default.connection.port',     $validator->$validated('db_port'));
-					Config::set('db.default.connection.database', $validator->$validated('db_database'));
+					Config::set('db.default.connection.hostname', $validator->validated('db_hostname'));
+					Config::set('db.default.connection.port',     $validator->validated('db_port'));
+					Config::set('db.default.connection.database', $validator->validated('db_database'));
 					break;
 				case 'pdo_mysql':
 				case 'pdo_pgsql':
-					$dsn = substr($db_connection, 4) . ':';
-					$dsn.= 'host='.$validator->$validated('db_hostname');
-					$dsn.= 'port='.$validator->$validated('db_port');
-					$dsn.= 'dbname='.$validator->$validated('db_database');
-					Config::set('db.default.connection.dsn', $dsn);
+					$dsn = substr($db_connection, 4) . ':'; // 種別を取り出す
+					$dsn.= 'host='  . $validator->validated('db_hostname') . ';';
+					$dsn.= 'port='  . $validator->validated('db_port')     . ';';
+					$dsn.= 'dbname='. $validator->validated('db_database') . ';';
+					Config::set('db.default.connection.dsn', trim($dsn, ';'));
 					break;
 				}
-				Config::set('db.default.connection.username', $validator->$validated('db_username'));
-				Config::set('db.default.connection.password', $validator->$validated('db_password'));
-				Config::set('db.default.table_prefix',        $validator->$validated('db_table_prefix'));
+				Config::set('db.default.connection.username', $validator->validated('db_username'));
+				Config::set('db.default.connection.password', $validator->validated('db_password'));
+				Config::set('db.default.table_prefix',        $validator->validated('db_table_prefix'));
 
-				Response::redirect('about');
-			//	if (true)
-			//	{
-			//		Response::redirect('');
-			//	}
-			//	else
-			//	{
-			//		$data['error_message'] = '保存できませんでした';
-			//	}
+				// マイグレーション
+				$migrate = array();
+				$migrate[] = array('name' => 'default', 'type' => 'app');
+				foreach(array_keys(Module::loaded()) as $name) {
+					$migrate[] = array('name' => $name, 'type' => 'module');
+				}
+				foreach(array_keys(Package::loaded()) as $name) {
+					$migrate[] = array('name' => $name, 'type' => 'package');
+				}
+
+				try
+				{
+					Config::save('db', 'db');
+
+					foreach($migrate as $param)
+					{
+						Migrate::latest($param['name'], $param['type']);
+					}
+
+					Response::redirect('');
+				}
+				catch (\Fuel\Core\Database_Exception $e)
+				{
+					\Log::error($e->getMessage());
+					$data['error_message'] = 'エラーが発生しました('.$e->getMessage().') '
+					                       . 'データベースの接続先などを見直してください。';
+					foreach ($form['db'] as &$field)
+					{
+						$field['error_message'] = '&nbsp;';
+					}
+				}
+				catch (\Exception $e)
+				{
+					\Log::error($e->getMessage());
+					$data['error_message'] = 'エラーが発生しました('.$e->getMessage().')';
+				}
 			}
 			else
 			{
-				foreach ($setup_form as $category => &$form_info)
+				foreach ($form as $category => &$form_info)
 				{
 					foreach ($form_info as &$field)
 					{

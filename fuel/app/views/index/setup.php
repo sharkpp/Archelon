@@ -1,6 +1,9 @@
 <h1>セットアップ</h1>
 <hr>
 
+<p>アプリケーションの使用する準備が整っていません。</p>
+<p>アプリケーションを使用するにはセットアップを行なってください。</p>
+
 <?php if (\Fuel::PRODUCTION != \Fuel::$env): ?>
 <div class="alert">
   <strong>警告！</strong> 現在の環境は <?php echo \Fuel::PRODUCTION; ?>(つまり本番環境)ではなく、<strong><?php echo \Fuel::$env; ?></strong> になっています。

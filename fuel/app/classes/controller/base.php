@@ -52,13 +52,16 @@ class Controller_Base extends Controller_Template
 		}
 	}
 
+	// ログイン済み？
 	public static function authorized()
 	{
 		return self::installed() && Auth::check();
 	}
 
+	// インストール済み？
 	public static function installed()
 	{
+		Config::load('migrations', true);
 		return 0 !== Config::get('migrations.version.app.default', 0);
 	}
 
