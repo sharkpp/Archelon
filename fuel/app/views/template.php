@@ -42,11 +42,11 @@
           <a class="brand" href="<?php echo Uri::create('/'); ?>">Archelon</a>
           <div class="nav-collapse collapse">
             <ul class="nav">
-<?php if (Auth::check()): /* ログイン済み ------------------------------------------------ */ ?>
+<?php if (\Controller_Base::authorized()): /* ログイン済み ------------------------------- */ ?>
               <li class="<?php echo ''==Uri::string()?'active':''; ?>"><a href="<?php echo Uri::create('/'); ?>"><i class="icon-home"></i> ホーム</a></li>
-<?php endif; /* ------------------------------------------------ */ ?>
+<?php endif; /* -------------------------------------------------------------------------- */ ?>
               <li><a href="<?php echo Uri::create('about'); ?>"><i class="icon-info-sign"></i> About</a></li>
-<?php if (Auth::check()): /* ログイン済み ------------------------------------------------ */ ?>
+<?php if (\Controller_Base::authorized()): /* ログイン済み ------------------------------- */ ?>
               <li class="<?php echo 'account/connect'==Uri::string()?'active':''; ?>"><a href="<?php echo Uri::create('account/connect'); ?>"><i class="icon-plus-sign"></i> アカウント追加</a></li>
               <li class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-cog"></i> 管理 <b class="caret"></b></a>
@@ -65,7 +65,7 @@
               </li>
 <?php endif; /* -------------------------------------------------------------------------- */ ?>
             </ul>
-<?php if (Auth::check()): /* ログイン済み ------------------------------------------------ */ ?>
+<?php if (\Controller_Base::authorized()): /* ログイン済み ------------------------------- */ ?>
             <ul class="nav pull-right">
               <li class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-user"></i> <?php echo Auth::instance()->get_screen_name(); ?> <b class="caret"></b></a>
@@ -76,7 +76,7 @@
                 </ul>
               </li>
             </ul>
-<?php else: /* 未ログイン ---------------------------------------------------------------- */ ?>
+<?php elseif (\Controller_Base::installed()): /* 未ログイン ------------------------------ */ ?>
             <ul class="nav pull-right">
               <li class="<?php echo 'signup'==Uri::string()?'active':''; ?>"><a href="<?php echo Uri::create('signup'); ?>">サインアップ</a></li>
               <li class="<?php echo 'signin'==Uri::string()?'active':''; ?>"><a href="<?php echo Uri::create('signin'); ?>"><i class="icon-signin"></i> サインイン</a></li>

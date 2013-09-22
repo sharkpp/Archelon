@@ -5,13 +5,26 @@ class Controller_Index extends Controller_Base
 
 	public function action_index()
 	{
-		if (Auth::check())
+		try
 		{
-			$this->action_dashboard();
+			if (Auth::check())
+			{
+				$this->action_dashboard();
+			}
+			else
+			{
+				$this->action_welcome();
+			}
 		}
-		else
+		catch (\Exception $e)
 		{
-			$this->action_welcome();
+			// マイグレーションされている？
+			if (!self::installed())
+			{
+				Response::redirect('setup');
+			}
+
+			throw $e;
 		}
 	}
 
@@ -19,6 +32,179 @@ class Controller_Index extends Controller_Base
 	{
 		// 404 ページの表示
 		return $this->response_404();
+	}
+
+	public function action_setup()
+	{
+		$data = array();
+
+		Config::load('db', 'db');
+
+		if ($dsn = Config::get('db.default.connection.dsn', ''))
+		{ // 'pgsql:host=localhost;dbname=fuel_db',
+			$dsn = preg_split('/[:;]/', $dsn, null, PREG_SPLIT_NO_EMPTY);
+			$dsn[0] = 'pdo_type='.$dsn[0];
+			$dsn_parts = array();
+			array_map(function($val) use (&$dsn_parts) { $v = explode('=', $val); $dsn_parts[$v[0]]=$v[1]; }, $dsn);
+			$pdo_type_to_connection = array('mysql' => 'pdo_mysql',
+			                                'pgsql' => 'pdo_pgsql');
+			$db_config = array(
+					'connection' => Arr::get($pdo_type_to_connection, Arr::get($dsn_parts, 'pdo_type', 'mysql'), 'pdo_mysql'),
+					'hostname' => Arr::get($dsn_parts, 'host',   'localhost'),
+					'port'     => Arr::get($dsn_parts, 'port',   '3306'),
+					'database' => Arr::get($dsn_parts, 'dbname', 'aaas'),
+				);
+		} else {
+			$db_config = array(
+					'connection' => Config::get('db.default.type', 'mysql'),
+					'hostname' => Config::get('db.default.connection.hostname', 'localhost'),
+					'port'     => Config::get('db.default.connection.port',     '3306'),
+					'database' => Config::get('db.default.connection.database', 'aaas'),
+				);
+		}
+
+		$setup_form = array(
+			'db' => array(
+				'db_connection' => array(
+					'label'      => '接続に使うドライバの種類',
+					'validation' => array('required'),
+					'form'       => array('type' => 'select', 'options' => array('mysql' => 'mysql',
+					                                                             'mysqli' => 'mysqli',
+					                                                             'pdo_mysql' => 'PDO(MySQL)',
+					                                                             'pdo_pgsql' => 'PDO(PostgreSQL)')),
+					'default'    => Input::post('db_username', Arr::get($db_config, 'connection', 'pdo_mysql')),
+				),
+				'db_hostname' => array(
+					'label'      => 'ホスト名',
+					'validation' => array('required', 'min_length' => array(1)),
+					'form'       => array('type' => 'text'),
+					'default'    => Input::post('db_hostname', Arr::get($db_config, 'hostname', 'localhost')),
+				),
+				'db_port' => array(
+					'label'      => 'ポート',
+					'validation' => array('required', 'numeric_between' => array(1, 65535), 'valid_string' => array(array('numeric'))),
+					'form'       => array('type' => 'text'),
+					'default'    => Input::post('db_port', Arr::get($db_config, 'port', '3306')),
+				),
+				'db_database' => array(
+					'label'      => 'データベース名',
+					'validation' => array('required', 'min_length' => array(1)),
+					'form'       => array('type' => 'text'),
+					'default'    => Input::post('db_database', Arr::get($db_config, 'database', 'aaas')),
+				),
+				'db_username' => array(
+					'label'      => 'ユーザー名',
+					'validation' => array('required', 'min_length' => array(1)),
+					'form'       => array('type' => 'text'),
+					'default'    => Input::post('db_username', Config::get('db.default.connection.username', 'root')),
+				),
+				'db_password' => array(
+					'label'      => 'パスワード',
+					'validation' => array(),
+					'form'       => array('type' => 'password'),
+					'default'    => Input::post('db_password', Config::get('db.default.connection.password', 'test')),
+				),
+				'db_table_prefix' => array(
+					'label'      => 'テーブル名のプレフィックス',
+					'validation' => array(),
+					'form'       => array('type' => 'text'),
+					'default'    => Input::post('db_table_prefix', Config::get('db.default.table_prefix', '')),
+				),
+			//	'send_email_when_expiration_password' => array(
+			//		'label'      => 'パスワードの期限が切れたらメールを送信',
+			//		'validation' => array(),
+			//		'form'       => array('type' => 'checkbox'),
+			//		'default'    => 'on',
+			//	),
+			),
+		);
+
+		$validator = \Validation::forge('validation');
+
+		// 入力フォームを構築
+		$form = array();
+		foreach ($setup_form as $category => $form_info)
+		{
+			foreach ($form_info as $field => $info)
+			{
+				$form[$category][$field] = array(
+						'name'     => $field,
+						'label'    => \Arr::get($info, 'label', ''),
+						'form'     => \Arr::get($info, 'form', ''),
+						'required' => false,
+						'value'    => \Input::post($field, \Arr::get($info, 'default', '')),
+						'error_message' => '',
+					);
+				$is_required = &$form[$category][$field]['required'];
+				// バリデーションルールを追加
+				$validat_field = $validator->add($field, $form[$category][$field]['label']);
+				$info['validation'] = \Arr::get($info, 'validation', array());
+				array_walk($info['validation'],
+					function($value, $key) use (&$validat_field, &$is_required) {
+						!is_int($key) || 'required' != $value ?: $is_required = true;
+						call_user_func_array(
+								array($validat_field, 'add_rule'),
+								is_int($key) ? array($value) : array_merge(array($key), $value)
+							);
+					});
+			}
+		}
+		if (\Input::post())
+		{
+			// 入力内容の検証
+			if ($validator->run())
+			{
+				$db_connection = $validator->$validated('db_connection');
+				switch ($db_connection)
+				{
+				case 'mysql':
+				case 'mysqli':
+					Config::set('db.default.type',                $db_connection);
+					Config::set('db.default.connection.hostname', $validator->$validated('db_hostname'));
+					Config::set('db.default.connection.port',     $validator->$validated('db_port'));
+					Config::set('db.default.connection.database', $validator->$validated('db_database'));
+					break;
+				case 'pdo_mysql':
+				case 'pdo_pgsql':
+					$dsn = substr($db_connection, 4) . ':';
+					$dsn.= 'host='.$validator->$validated('db_hostname');
+					$dsn.= 'port='.$validator->$validated('db_port');
+					$dsn.= 'dbname='.$validator->$validated('db_database');
+					Config::set('db.default.connection.dsn', $dsn);
+					break;
+				}
+				Config::set('db.default.connection.username', $validator->$validated('db_username'));
+				Config::set('db.default.connection.password', $validator->$validated('db_password'));
+				Config::set('db.default.table_prefix',        $validator->$validated('db_table_prefix'));
+
+				Response::redirect('about');
+			//	if (true)
+			//	{
+			//		Response::redirect('');
+			//	}
+			//	else
+			//	{
+			//		$data['error_message'] = '保存できませんでした';
+			//	}
+			}
+			else
+			{
+				foreach ($setup_form as $category => &$form_info)
+				{
+					foreach ($form_info as &$field)
+					{
+						$field['error_message']
+							= $validator->validated($field['name'])
+								? '' : $validator->error($field['name']);
+					}
+				}
+			}
+		}
+
+		$data['form'] = $form;
+
+		$this->template->title = 'セットアップ';
+		$this->template->content = View::forge('index/setup', $data);
 	}
 
 	public function action_about()

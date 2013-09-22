@@ -9,15 +9,23 @@ class Controller_Base extends Controller_Template
 		// 初期処理
 		$method = Uri::segment(1);
 		$controller_method = Uri::segment(3); // controller/*/???
+		//
+		$through_methods = array( // ログインが必要ない次ページ
+			'about',
+			'setup',
+		);
+		if (in_array($method, $through_methods))
+		{
+			return;
+		}
 		// ログイン必須ページでログインしている状態か？のチェック
-		$auth_methods = array( // ログインが必要ない次ページ
+		$through_auth_methods = array( // ログインが必要ないページ
 			'',
 			'signup',
 			'signin',
-			'about',
 			'api',
 		);
-		if (!in_array($method, $auth_methods) &&
+		if (!in_array($method, $through_auth_methods) &&
 			!Auth::check())
 		{
 			Log::warning('Required signup in "'.Uri::string().'"');
@@ -42,6 +50,16 @@ class Controller_Base extends Controller_Template
 			Session::set_flash('error_message', 'セッションの有効期限が切れました。処理をおこなってください。');
 			Response::redirect('signin?url=' . Uri::string());
 		}
+	}
+
+	public static function authorized()
+	{
+		return self::installed() && Auth::check();
+	}
+
+	public static function installed()
+	{
+		return 0 !== Config::get('migrations.version.app.default', 0);
 	}
 
 	protected function response_404()

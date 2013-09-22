@@ -106,7 +106,7 @@ class Controller_Connector extends Controller_Base
 			}
 			else
 			{
-				foreach ($form as $field)
+				foreach ($form as &$field)
 				{
 					$field['error_message']
 						= $validator->validated($field['name'])
