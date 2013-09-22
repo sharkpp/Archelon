@@ -45,7 +45,7 @@
 <?php if (Auth::check()): /* ログイン済み ------------------------------------------------ */ ?>
               <li class="<?php echo ''==Uri::string()?'active':''; ?>"><a href="<?php echo Uri::create('/'); ?>"><i class="icon-home"></i> ホーム</a></li>
 <?php endif; /* ------------------------------------------------ */ ?>
-              <li><a href="#about">About</a></li>
+              <li><a href="<?php echo Uri::create('about'); ?>"><i class="icon-info-sign"></i> About</a></li>
 <?php if (Auth::check()): /* ログイン済み ------------------------------------------------ */ ?>
               <li class="<?php echo 'account/connect'==Uri::string()?'active':''; ?>"><a href="<?php echo Uri::create('account/connect'); ?>"><i class="icon-plus-sign"></i> アカウント追加</a></li>
               <li class="dropdown">
@@ -63,7 +63,7 @@
 -->
                 </ul>
               </li>
-<?php endif; /* ------------------------------------------------ */ ?>
+<?php endif; /* -------------------------------------------------------------------------- */ ?>
             </ul>
 <?php if (Auth::check()): /* ログイン済み ------------------------------------------------ */ ?>
             <ul class="nav pull-right">
@@ -76,12 +76,12 @@
                 </ul>
               </li>
             </ul>
-<?php else: /* 未ログイン ------------------------------------------------ */ ?>
+<?php else: /* 未ログイン ---------------------------------------------------------------- */ ?>
             <ul class="nav pull-right">
               <li class="<?php echo 'signup'==Uri::string()?'active':''; ?>"><a href="<?php echo Uri::create('signup'); ?>">サインアップ</a></li>
               <li class="<?php echo 'signin'==Uri::string()?'active':''; ?>"><a href="<?php echo Uri::create('signin'); ?>"><i class="icon-signin"></i> サインイン</a></li>
             </ul>
-<?php endif; /* ------------------------------------------------ */ ?>
+<?php endif; /* -------------------------------------------------------------------------- */ ?>
           </div><!--/.nav-collapse -->
         </div>
       </div>

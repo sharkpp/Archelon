@@ -15,10 +15,14 @@ class Controller_Index extends Controller_Base
 		}
 	}
 
+	public function action_about()
+	{
+		$this->template->content = View::forge('index/about');
+	}
+
 	public function action_welcome()
 	{
-		$data = array();
-		$this->template->content = View::forge('index/welcome', $data);
+		$this->template->content = View::forge('index/welcome');
 	}
 
 	public function action_dashboard()

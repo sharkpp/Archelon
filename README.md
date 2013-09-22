@@ -5,6 +5,8 @@
 Archelon は アカウントアグリゲーションサービスの一種です。
 RESTful APIなどなどウェブAPIを用意していないウェブアプリケーションにAPIを追加するシステムです。
 
+フロントエンドとバックエンドを担う Archelon と、各種ウェブアプリケーションにログインし情報を集めウェブAPIとしてのインターフェースを用意するコネクタとで構成されています。
+
 ## インストール
 
 1. データベースの設定は ```fuel/app/config/production/db.php``` に書かれているので環境に合わせてデータベース名などを変更してください。
@@ -34,9 +36,30 @@ APIの確認の方法です。
 
 ## ライセンス
 
-Copyright(c) 2013 sharkpp All rights reserved.
 このアプリケーションは、The MIT License の元で公開されています。
 
-Archelon.svg および archelon-bg は [File:Archelon BW.jpg - Wikimedia Commons](http://commons.wikimedia.org/wiki/File:Archelon_BW.jpg?uselang=ja) を元に作成されました。
-これらのファイルは クリエイティブ・コモンズ 表示-継承 3.0 非移植 (CC by-sa 3.0) の元で公開されています。
+      The MIT License (MIT)
+      
+      Copyright (c) 2013 sharkpp All rights reserved.
+      
+      Permission is hereby granted, free of charge, to any person obtaining a copy
+      of this software and associated documentation files (the "Software"), to deal
+      in the Software without restriction, including without limitation the rights
+      to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+      copies of the Software, and to permit persons to whom the Software is
+      furnished to do so, subject to the following conditions:
+      
+      The above copyright notice and this permission notice shall be included in
+      all copies or substantial portions of the Software.
+      
+      THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+      IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+      FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+      AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+      LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+      OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+      THE SOFTWARE.
+
+Archelon.svg および archelon-bg は [File:Archelon BW.jpg - Wikimedia Commons](http://commons.wikimedia.org/wiki/File:Archelon_BW.jpg?uselang=ja) (作者:[Nobu Tamura](http://spinops.blogspot.com/)) を元に作成されました。
+これらのファイルは [クリエイティブ・コモンズ 表示 - 継承 3.0 非移植](http://creativecommons.org/licenses/by-sa/3.0/deed.ja) ライセンスの下に提供されています。
 

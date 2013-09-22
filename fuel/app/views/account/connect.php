@@ -13,7 +13,7 @@
 <?php else: ?>
 <div class="row">
 <?php foreach ($connectors as $connector): ?>
-  <div class="span5">
+  <div class="span4">
     <div class="well well-small">
       <h2><?php echo $connector['name']; ?></h2>
       <p><?php echo $connector['description']; ?></p>

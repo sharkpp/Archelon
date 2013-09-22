@@ -14,6 +14,7 @@ class Controller_Base extends Controller_Template
 			'',
 			'signup',
 			'signin',
+			'about',
 			'api',
 		);
 		if (!in_array($method, $auth_methods) &&

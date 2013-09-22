@@ -17,7 +17,7 @@ body {
 <?php else: ?>
 <div class="row">
 <?php foreach ($accounts as $account): ?>
-  <div class="span5">
+  <div class="span6">
     <div class="well well-small">
       <ul class="nav nav-pills">
         <li class="dropdown">
