@@ -43,4 +43,11 @@ class Controller_Base extends Controller_Template
 			Response::redirect('signin?url=' . Uri::string());
 		}
 	}
+
+	protected function response_404()
+	{
+		$this->template->title = '404 Not Found';
+		$this->template->content = View::forge('index/404');
+		return Response::forge($this->template, 404);
+	}
 }

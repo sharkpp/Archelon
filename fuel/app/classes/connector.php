@@ -33,14 +33,17 @@ abstract class Connector
 	// クラスを生成
 	public static function forge($connector_id)
 	{
-		$q = \Model_Connector::query();
-		if (is_numeric($connector_id))
-		{ // コネクタIDで検索
-			$q = $q->where('id', $connector_id);
+		if (is_null($connector_id))
+		{
+			return false;
 		}
 		else
 		{ // コネクタ名で検索
-			$q = $q->where('name', $connector_id);
+			$q = \Model_Connector::query()
+					->where(is_numeric($connector_id)
+								? 'id'    // コネクタIDで検索
+								: 'name', // コネクタ名で検索
+							$connector_id);
 		}
 
 		if (!($connector = $q->get_one()))

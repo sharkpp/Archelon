@@ -47,18 +47,13 @@ class Controller_Connector extends Controller_Base
 
 	public function action_config($connector_id = null)
 	{
-		if (is_null($connector_id))
-		{ // 指定されたコネクタがおかしいので飛ばす
-			Response::redirect('connector/admin');
-		}
-
 		$data = array();
 		$data['error_message'] = '';
 
-		$connector = \Connector::forge($connector_id);
-		if (!$connector)
+		if (!($connector = \Connector::forge($connector_id)))
 		{ // 指定されたコネクタがおかしいので飛ばす
-			Response::redirect('connector/admin');
+			// 404 ページの表示
+			return $this->response_404();
 		}
 
 		$connector_spec = $connector->get_connector_spec();
@@ -139,14 +134,16 @@ class Controller_Connector extends Controller_Base
 
 		if ('api' != $type)
 		{
-			Response::redirect('');
+			// 404 ページの表示
+			return $this->response_404();
 		}
 
-		Module::load($connector_name);
-		$connector_class = Inflector::words_to_upper($connector_name).'\\Connector';
-		$connector = new $connector_class;
-
-		$account = Model_Account::find($id);
+		if (!($connector = Connector::forge($connector_name)) ||
+			!($account = Model_Account::find($id)))
+		{
+			// 404 ページの表示
+			return $this->response_404();
+		}
 
 		$data['connector'] = $connector_name;
 		$data['specs'] = $connector->get_api_spec();

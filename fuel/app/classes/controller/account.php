@@ -3,13 +3,6 @@
 class Controller_Account extends Controller_Base
 {
 
-	public function action_index()
-	{
-		$data["subnav"] = array('index'=> 'active' );
-		$this->template->title = 'Account &raquo; Index';
-		$this->template->content = View::forge('account/index', $data);
-	}
-
 	public function action_connect($connector_id = null)
 	{
 		$data = array();
@@ -56,14 +49,16 @@ class Controller_Account extends Controller_Base
 			}
 		}
 
-		Response::redirect('account/connect');
+		// 404 ページの表示
+		return $this->response_404();
 	}
 
 	public function action_disconnect($account_id = null)
 	{
 		if (!is_numeric($account_id))
 		{
-			Response::redirect('');
+			// 404 ページの表示
+			return $this->response_404();
 		}
 		$account_id = intval($account_id);
 
@@ -84,7 +79,8 @@ class Controller_Account extends Controller_Base
 			$connector = \Connector::forge($account->connector_id);
 			if (!$connector)
 			{ // 指定されたコネクタがおかしいので飛ばす
-				Response::redirect('');
+				// 404 ページの表示
+				return $this->response_404();
 			}
 
 			$connector->drop_account($account_id);
@@ -94,7 +90,8 @@ class Controller_Account extends Controller_Base
 
 		if (!($connector = \Model_Connector::find($account->connector_id)))
 		{
-			Response::redirect('');
+			// 404 ページの表示
+			return $this->response_404();
 		}
 
 		$data['description']    = @ unserialize($account->description);

@@ -15,8 +15,15 @@ class Controller_Index extends Controller_Base
 		}
 	}
 
+	public function action_404()
+	{
+		// 404 ページの表示
+		return $this->response_404();
+	}
+
 	public function action_about()
 	{
+		$this->template->title = 'About';
 		$this->template->content = View::forge('index/about');
 	}
 
