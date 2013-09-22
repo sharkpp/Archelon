@@ -59,12 +59,53 @@ class Controller_Account extends Controller_Base
 		Response::redirect('account/connect');
 	}
 
-	public function action_disconnect($account_id)
+	public function action_disconnect($account_id = null)
 	{
+		if (!is_numeric($account_id))
+		{
+			Response::redirect('');
+		}
+		$account_id = intval($account_id);
+
 		$data = array();
-		$this->template->title = 'Account &raquo; Delete';
+
+		if (!($account = \Model_Account::find($account_id)))
+		{
+			Response::redirect('');
+		}
+
+		if (Input::post())
+		{
+			if ('submit' != Input::post('submit', 'cancel'))
+			{
+				Response::redirect('');
+			}
+
+			$connector = \Connector::forge($account->connector_id);
+			if (!$connector)
+			{ // 指定されたコネクタがおかしいので飛ばす
+				Response::redirect('');
+			}
+
+			$connector->drop_account($account_id);
+
+			Response::redirect('');
+		}
+
+		if (!($connector = \Model_Connector::find($account->connector_id)))
+		{
+			Response::redirect('');
+		}
+
+		$data['description']    = @ unserialize($account->description);
+		$data['connector_name'] = $connector->screen_name;
+
+		$this->template->breadcrumb = array('アカウント追加' => 'account/connect');
+		$this->template->title = 'アカウント追加';
 		$this->template->content = View::forge('account/disconnect', $data);
+		$this->template->content->set_safe('connector_name', $data['connector_name']);
 	}
+
 
 	private function edit_account($connector_id, $account_id)
 	{
@@ -115,7 +156,7 @@ class Controller_Account extends Controller_Base
 			{
 				if ($connector->save_account($validator, $account_id))
 				{
-					\Response::redirect('');
+					Response::redirect('');
 				}
 				else
 				{
@@ -124,9 +165,6 @@ class Controller_Account extends Controller_Base
 			}
 			else
 			{
-\Log::info(print_r($validator,true));
-\Log::info(print_r($_POST,true));
-\Log::info(print_r($form,true));
 				foreach ($form as $field)
 				{
 					$field['error_message']

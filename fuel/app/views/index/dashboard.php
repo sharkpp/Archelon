@@ -59,7 +59,7 @@ body {
     <p></p>
   </div>
   <div class="modal-footer">
-    <a href="#" class="btn">はい</a>
-    <a href="#" class="btn btn-primary" data-dismiss="modal" aria-hidden="true">いいえ</a>
+    <a href="#" class="btn btn-danger"                             >削除</a>
+    <a href="#" class="btn" data-dismiss="modal" aria-hidden="true">キャンセル</a>
   </div>
 </div>

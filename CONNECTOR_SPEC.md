@@ -21,26 +21,9 @@
 
 ## 実装の制限
 
-* URLは ```/connector/コネクタ名/account/*``` で ```classes/controller/account.php``` が、
-  ```/connector/コネクタ名/admin/*``` で ```classes/controller/admin.php``` が、
-  ```/api/コネクタ名/*``` で ```classes/controller/*``` がマッピングされています。。
+* URLは ```/api/コネクタ名/*``` で ```classes/controller/*``` がマッピングされています。。
 * ```classes/connector.php``` は \Connector から派生し必須となるインターフェースを実装すること。
-* ```classes/controller/account.php``` および ```classes/controller/admin.php``` は ```\Controller_Connector_Base``` から派生すること。
 * ORMモデルは衝突回避のため ```Model_Forum_User``` つまり、コネクタ名をモデルの名前に含むこと。
-
-## Controller_Account クラス
-
-下記のアクションの実装が必要です。
-
-* action_connect()
-* action_edit($id)
-* action_disconnect()
-
-## Controller_Admin クラス
-
-下記のアクションの実装が必要です。
-
-* action_config()
 
 ## Connector インターフェース
 
@@ -101,41 +84,6 @@
                 // 以下、API分繰り返す
             );
 
-### 登録情報フォームの取得
-
-このメソッドの結果を元にアカウント追加ページを構築します。
-更新時に新規作成時にない項目を追加として出してもOK。
-[Creating models - Orm Package - FuelPHP Documentation](http://fuelphp.com/docs/packages/orm/creating_models.html#/propperties) を参考
-
-#### インターフェース
-
-      public function get_account_form($id = null);
-
-#### 戻り値
-
-        return array(
-                'user' => array(
-                    'label' => 'ユーザー名', // 画面に表示するラベル
-                    'validation' => array('required', 'min_length' => array(3), 'max_length' => array(20)),
-                    'form' => array('type' => 'text'),
-                    'default' => 'New article', // ※すでに登録済みの場合は
-                ),
-                '@script' => "alert('test')", // 追加でスクリプトが必要であれば
-            );
-
-### 登録情報の更新
-
-登録情報を新規に追加もしくは更新します。
-
-#### インターフェース
-
-      public function save_account($id, $validation);
-
-#### 戻り値
-
-* true 登録成功
-* false 登録失敗 ※例外を通知
-
 ### コネクタ設定フォームの取得
 
 このメソッドの結果を元にコネクタ設定ページを構築します。
@@ -167,5 +115,55 @@
 
 #### 戻り値
 
-* true 登録成功
-* false 登録失敗 ※例外を通知
+* true  成功
+* false 失敗
+
+### 登録情報フォームの取得
+
+このメソッドの結果を元にアカウント追加ページを構築します。
+更新時に新規作成時にない項目を追加として出してもOK。
+[Creating models - Orm Package - FuelPHP Documentation](http://fuelphp.com/docs/packages/orm/creating_models.html#/propperties) を参考
+
+#### インターフェース
+
+      public function get_account_form($account_id = null);
+
+#### 戻り値
+
+        return array(
+                'user' => array(
+                    'label' => 'ユーザー名', // 画面に表示するラベル
+                    'validation' => array('required', 'min_length' => array(3), 'max_length' => array(20)),
+                    'form' => array('type' => 'text'),
+                    'default' => 'New article', // ※すでに登録済みの場合は
+                ),
+                '@script' => "alert('test')", // 追加でスクリプトが必要であれば
+            );
+
+### 登録情報の更新
+
+登録情報を新規に追加もしくは更新します。
+
+#### インターフェース
+
+      public function save_account($validation, $account_id = null);
+
+#### 戻り値
+
+* true  成功
+* false 失敗
+
+### 登録情報の削除
+
+登録情報を削除します。
+```\Model_Account``` も削除が必要です。
+
+#### インターフェース
+
+      public function drop_account($account_id);
+
+#### 戻り値
+
+* true  成功
+* false 失敗
+

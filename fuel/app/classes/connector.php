@@ -1,6 +1,6 @@
 <?php
 /**
- * Mymodule モジュールの中でのモジュールコントローラ
+ * Connector コネクタ共通インターフェース＆メソッド
  */
 
 abstract class Connector
@@ -13,19 +13,24 @@ abstract class Connector
 	// API情報の取得
 	abstract public function get_api_spec();
 
-	// 登録情報フォームの取得
-	abstract public function get_account_form($id = null);
-
-	// 登録情報の更新
-	abstract public function save_account($validation, $id);
-
 	// コネクタ設定フォームの取得
 	abstract public function get_config_form();
 
-	// 登録情報の更新
+	// コネクタ設定の更新
 	abstract public function save_config($validation);
 
-	// 
+	// 登録情報フォームの取得
+	abstract public function get_account_form($account_id = null);
+
+	// 登録情報の更新
+	abstract public function save_account($validation, $account_id = null);
+
+	// 登録情報の削除
+	abstract public function drop_account($account_id);
+
+
+
+	// クラスを生成
 	public static function forge($connector_id)
 	{
 		$q = \Model_Connector::query();
