@@ -39,6 +39,11 @@ class Controller_Index extends Controller_Base
 
 	public function action_setup()
 	{
+		if (self::installed())
+		{
+			Response::redirect('');
+		}
+
 		$data = array();
 
 		Config::load('db', true);
