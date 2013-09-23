@@ -18,6 +18,10 @@ class Controller_Base extends Controller_Template
 		{
 			return;
 		}
+		if (!self::installed())
+		{
+			Response::redirect('setup');
+		}
 		// ログイン必須ページでログインしている状態か？のチェック
 		$through_auth_methods = array( // ログインが必要ないページ
 			'',

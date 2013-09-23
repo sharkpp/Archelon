@@ -36,5 +36,5 @@ DROP TABLE IF EXISTS `users_sessionscopes`;
 DROP TABLE IF EXISTS `users_sessions`;
 DROP TABLE IF EXISTS `users_scopes`;
 DROP TABLE IF EXISTS `users_clients`;
-DROP TABLE IF EXISTS `dneo_configs`;
 DROP TABLE IF EXISTS `dneo_users`;
+DROP TABLE IF EXISTS `example_users`;

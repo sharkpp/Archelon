@@ -145,6 +145,9 @@ class Controller_Connector extends Controller_Base
 			return $this->response_404();
 		}
 
+		$connector_spec = $connector->get_connector_spec();
+		$screen_name = \Arr::get($connector_spec, 'screen_name', '');
+
 		$data['connector'] = $connector_name;
 		$data['specs'] = $connector->get_api_spec();
 
@@ -159,7 +162,7 @@ class Controller_Connector extends Controller_Base
 			}
 		}
 
-		$this->template->breadcrumb = array('APIドキュメント' => '', 'APIドキュメント' => '', 'aaa' => '');
+		$this->template->breadcrumb = array('APIドキュメント' => '', 'APIドキュメント' => '', $screen_name.' のAPIサンプル' => '');
 		$this->template->title = implode(' &raquo; ', array_keys($this->template->breadcrumb));
 		$this->template->script  = View::forge('connector/docs.js', $data);
 		$this->template->content = View::forge('connector/docs', $data);

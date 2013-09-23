@@ -119,7 +119,7 @@ class Connector
 					$connector->screen_name = $info['screen_name'];
 					$connector->description = $info['description'];
 					$connector->save();
-					$messages[] = sprintf(is_null($info['id']) ? '%s が追加されました。' : '%s が更新されました。', $name);
+					$messages[] = sprintf(is_null($info['id']) ? '%s が追加されました。' : '%s が更新されました。', \Security::strip_tags($info['screen_name']));
 				}
 
 				\DB::commit_transaction();
