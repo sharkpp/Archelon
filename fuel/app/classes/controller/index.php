@@ -125,6 +125,20 @@ class Controller_Index extends Controller_Base
 			//		'default'    => 'on',
 			//	),
 			),
+			'auth' => array(
+				'auth_simple_enable' => array(
+					'label'      => 'ログイン認証を使う',
+					'validation' => array(),
+					'form'       => array('type' => 'checkbox'),
+					'default'    => Input::post('auth_simple_enable', 'on'),
+				),
+				'auth_ldap_enable' => array(
+					'label'      => 'LDAP認証を使う',
+					'validation' => array(),
+					'form'       => array('type' => 'checkbox'),
+					'default'    => Input::post('auth_ldap_enable', ''),
+				),
+			),
 		);
 
 		$validator = \Validation::forge('validation');

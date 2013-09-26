@@ -78,7 +78,7 @@
             </ul>
 <?php elseif (\Controller_Base::installed()): /* 未ログイン ------------------------------ */ ?>
             <ul class="nav pull-right">
-              <li class="<?php echo 'signup'==Uri::string()?'active':''; ?>"><a href="<?php echo Uri::create('signup'); ?>">サインアップ</a></li>
+              <li class="<?php echo 'signup'==Uri::string()?'active':''; ?>"><a href="<?php echo Uri::create('signup'); ?>"><i class="icon-check"></i> サインアップ</a></li>
               <li class="<?php echo 'signin'==Uri::string()?'active':''; ?>"><a href="<?php echo Uri::create('signin'); ?>"><i class="icon-signin"></i> サインイン</a></li>
             </ul>
 <?php endif; /* -------------------------------------------------------------------------- */ ?>

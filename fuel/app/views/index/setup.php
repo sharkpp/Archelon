@@ -16,7 +16,11 @@
 <!-- データベース関連 ------------------------------------------------------ -->
     <legend>データベース関連</legend>
 <?php echo \View::forge('form', array('form' => $form['db']))->render(); ?>
+<!-- データベース関連 ------------------------------------------------------ -->
+    <legend>認証関連</legend>
+<?php echo \View::forge('form', array('form' => $form['auth']))->render(); ?>
 <!-- 更新ボタン ------------------------------------------------------------ -->
+    <legend></legend>
     <div class="control-group">
       <div class="controls">
         <button type="submit" class="btn btn-primary">保存</button>
