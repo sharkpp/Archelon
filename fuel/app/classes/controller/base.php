@@ -13,6 +13,7 @@ class Controller_Base extends Controller_Template
 		$through_methods = array( // ログインが必要ない次ページ
 			'about',
 			'setup',
+			'404',
 		);
 		if (in_array($method, $through_methods))
 		{
