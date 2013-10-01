@@ -212,6 +212,9 @@ class Controller_Index extends Controller_Base
 
 				try
 				{
+					// ファイルがないとcoreが優先されるので、空ファイルを設置
+					File::update(APPPATH.'config', 'db.php', '');
+
 					Config::save('db', 'db');
 
 					foreach($migrate as $param)

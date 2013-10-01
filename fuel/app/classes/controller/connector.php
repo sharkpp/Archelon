@@ -97,7 +97,7 @@ class Controller_Connector extends Controller_Base
 			{
 				if ($connector->save_config($validator))
 				{
-					\Response::redirect('connector/config');
+					\Response::redirect('connector/admin');
 				}
 				else
 				{
