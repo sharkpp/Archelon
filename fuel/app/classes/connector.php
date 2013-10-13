@@ -66,6 +66,18 @@ abstract class Connector
 		}
 	}
 
+	// コネクタの名前を取得
+	public static function get_connector_name()
+	{
+		if ('connector' == \Uri::segment(1) ||
+			'api' == \Uri::segment(1) ||
+			'docs' == \Uri::segment(1))
+		{
+			return \Uri::segment(2);
+		}
+		return false;
+	}
+
 	// コネクタのIDを取得
 	public static function get_connector_id($connector_name = null)
 	{
@@ -145,5 +157,45 @@ abstract class Connector
 		$key = $salt_ . $crypto_key;
 
 		return \Crypt::decode(base64_decode($data), $key);
+	}
+
+	// アカウント情報を取得
+	public static function get_account()
+	{
+		$api_key = \Input::get('key', \Input::post('key'));
+
+		$account = \Model_Account::query()
+						->where('api_key', $api_key)
+						->where('connector_id', self::get_connector_id())
+						->get_one();
+
+		return $account;
+	}
+
+	// キャッシュの取得
+	public static function get_cache($keys, $expiration = false)
+	{
+		$api_key = \Input::get('key', \Input::post('key'));
+		$keys = is_array($keys) ? implode('.', $keys) : $keys;
+		$key  = self::get_connector_name() . '.' . md5($keys . '/' . $api_key);
+
+		try
+		{
+			return \Cache::get($key);
+		}
+		catch (\CacheNotFoundException $e)
+		{
+			return false;
+		}
+	}
+
+	// キャッシュの保存
+	public static function set_cache($keys, $value)
+	{
+		$api_key = \Input::get('key', \Input::post('key'));
+		$keys = is_array($keys) ? implode('.', $keys) : $keys;
+		$key  = self::get_connector_name() . '.' . md5($keys . '/' . $api_key);
+
+		\Cache::set($key , $value, 3600 * 3);
 	}
 }
