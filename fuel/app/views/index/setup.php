@@ -13,17 +13,29 @@
 <form class="form-horizontal" method="post">
   <fieldset>
     <?php echo \Form::hidden(\Config::get('security.csrf_token_key'), \Security::fetch_token()); ?>
-<!-- データベース関連 ------------------------------------------------------ -->
-    <legend>データベース関連</legend>
-<?php echo \View::forge('form', array('form' => $form['db']))->render(); ?>
-<!-- データベース関連 ------------------------------------------------------ -->
-    <legend>認証関連</legend>
-<?php echo \View::forge('form', array('form' => $form['auth']))->render(); ?>
+    <div class="accordion" id="config">
+<?php foreach(array(
+          'db'       => 'データベース関連',
+          'auth'     => '認証関連',
+          'ldapauth' => 'Ldap認証関連',
+          ) as $key => $name): ?>
+      <div class="accordion-group">
+        <div class="accordion-heading">
+          <a class="accordion-toggle" data-toggle="collapse" data-parent="#config" href="#collapse_<?php echo $key; ?>" ><?php echo $name; ?></a>
+        </div>
+        <div id="collapse_<?php echo $key; ?>" class="accordion-body collapse <?php 'ldapauth' == $key ?: print('in'); ?>">
+          <div class="accordion-inner">
+<?php echo \View::forge('form', array('form' => $form[$key]))->render(); ?>
+          </div>
+        </div>
+      </div>
+<?php endforeach; ?>
 <!-- 更新ボタン ------------------------------------------------------------ -->
-    <legend></legend>
-    <div class="control-group">
-      <div class="controls">
-        <button type="submit" class="btn btn-primary">保存</button>
+      <p> </p>
+      <div class="control-group">
+        <div class="controls">
+          <button type="submit" class="btn btn-primary">保存</button>
+        </div>
       </div>
     </div>
   </fieldset>

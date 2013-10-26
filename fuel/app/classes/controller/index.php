@@ -46,7 +46,19 @@ class Controller_Index extends Controller_Base
 
 		$data = array();
 
+		// LDAP認証パッケージが読み込める？なら選択項目を表示
+		try
+		{
+			\Package::load('ldapauth');
+			$use_ldapauth = true;
+		}
+		catch (\Exception $e)
+		{ // Ldap認証が無効の場合は表示しない
+			$use_ldapauth = false;
+		}
+
 		Config::load('db', true);
+		Config::load('ldapauth', true);
 
 		if ($dsn = Config::get('db.default.connection.dsn', ''))
 		{ // 'pgsql:host=localhost;dbname=fuel_db',
@@ -128,20 +140,83 @@ class Controller_Index extends Controller_Base
 			'auth' => array(
 				'auth_simple_enable' => array(
 					'label'      => 'ログイン認証を使う',
-					'validation' => array(),
+					'validation' => array('required_whichever' => array('auth_driver')),
 					'form'       => array('type' => 'checkbox'),
-					'default'    => Input::post('auth_simple_enable', 'on'),
+					'default'    => Input::post('auth_simple_enable', \Input::post() ? false : true),
 				),
-				'auth_ldap_enable' => array(
+				'auth_ldap_enable' => !$use_ldapauth ?: array(
 					'label'      => 'LDAP認証を使う',
-					'validation' => array(),
+					'validation' => array('required_whichever' => array('auth_driver')),
 					'form'       => array('type' => 'checkbox'),
-					'default'    => Input::post('auth_ldap_enable', ''),
+					'default'    => Input::post('auth_ldap_enable', \Input::post() ? false : true),
+				),
+			),
+			'ldapauth' => array(
+				'ldap_host' => !$use_ldapauth ?: array(
+					'label'      => 'Ldapサーバー名',
+					'validation' => array('required', 'min_length' => array(1)),
+					'form'       => array('type' => 'text'),
+					'default'    => Input::post('ldap_host', Config::get('ldapauth.host')),
+				),
+				'ldap_port' => !$use_ldapauth ?: array(
+					'label'      => 'Ldapサーバーポート',
+					'validation' => array('required', 'min_length' => array(1)),
+					'form'       => array('type' => 'text'),
+					'default'    => Input::post('ldap_port', Config::get('ldapauth.port')),
+				),
+				'ldap_secure' => !$use_ldapauth ?: array(
+					'label'      => 'SSLを使用する',
+					'validation' => array('required', 'min_length' => array(1)),
+					'form'       => array('type' => 'checkbox'),
+					'default'    => Input::post('ldap_secure', \Input::post() ? '' : Config::get('ldapauth.secure')),
+				),
+				'ldap_username' => !$use_ldapauth ?: array(
+					'label'      => 'ユーザー名',
+					'validation' => array('required', 'min_length' => array(1)),
+					'form'       => array('type' => 'text'),
+					'default'    => Input::post('ldap_username', Config::get('ldapauth.username')),
+				),
+				'ldap_password' => !$use_ldapauth ?: array(
+					'label'      => 'パスワード',
+					'validation' => array(),
+					'form'       => array('type' => 'password'),
+					'default'    => Input::post('ldap_password', Config::get('ldapauth.password')),
+				),
+				'ldap_basedn' => !$use_ldapauth ?: array(
+					'label'      => '基準DN',
+					'validation' => array('required', 'min_length' => array(1)),
+					'form'       => array('type' => 'text'),
+					'default'    => Input::post('ldap_basedn', Config::get('ldapauth.basedn')),
+				),
+				'ldap_account' => !$use_ldapauth ?: array(
+					'label'      => 'アカウント名フィールド',
+					'validation' => array('required', 'min_length' => array(1)),
+					'form'       => array('type' => 'text'),
+					'default'    => Input::post('ldap_account', Config::get('ldapauth.account')),
+				),
+				'ldap_email' => !$use_ldapauth ?: array(
+					'label'      => 'メールアドレスフィールド',
+					'validation' => array('required', 'min_length' => array(1)),
+					'form'       => array('type' => 'text'),
+					'default'    => Input::post('ldap_email', Config::get('ldapauth.email')),
+				),
+				'ldap_firstname' => !$use_ldapauth ?: array(
+					'label'      => '姓 フィールド',
+					'validation' => array('required', 'min_length' => array(1)),
+					'form'       => array('type' => 'text'),
+					'default'    => Input::post('ldap_firstname', Config::get('ldapauth.firstname')),
+				),
+				'ldap_lastname' => !$use_ldapauth ?: array(
+					'label'      => '名 フィールド',
+					'validation' => array('required', 'min_length' => array(1)),
+					'form'       => array('type' => 'text'),
+					'default'    => Input::post('ldap_lastname', Config::get('ldapauth.lastname')),
 				),
 			),
 		);
 
 		$validator = \Validation::forge('validation');
+		$validator->add_callable('Validation_Required'); // required_whichever用
 
 		// 入力フォームを構築
 		$form = array();
@@ -149,6 +224,9 @@ class Controller_Index extends Controller_Base
 		{
 			foreach ($form_info as $field => $info)
 			{
+				if (false === $info) {
+					continue;
+				}
 				$form[$category][$field] = array(
 						'name'     => $field,
 						'label'    => \Arr::get($info, 'label', ''),
@@ -200,6 +278,16 @@ class Controller_Index extends Controller_Base
 				Config::set('db.default.connection.password', $validator->validated('db_password'));
 				Config::set('db.default.table_prefix',        $validator->validated('db_table_prefix'));
 
+				Config::set('auth.driver', array_merge(
+												$validator->validated('auth_simple_enable') ? array('Simpleauth') : array(),
+												$validator->validated('auth_ldap_enable')   ? array('Ldapauth')   : array()
+											));
+				Config::set('auth.verify_multiple_logins', true);
+				Config::set('config.always_load.packages', array_merge(
+																array('orm', 'auth'),
+																$validator->validated('auth_ldap_enable') ? array('ldapauth') : array()
+															));
+
 				// マイグレーション
 				$migrate = array();
 				$migrate[] = array('name' => 'default', 'type' => 'app');
@@ -212,10 +300,14 @@ class Controller_Index extends Controller_Base
 
 				try
 				{
-					// ファイルがないとcoreが優先されるので、空ファイルを設置
+					// ファイルがないとcoreやpackagesが優先されるので、空ファイルを設置
 					File::update(APPPATH.'config', 'db.php', '');
+					File::update(APPPATH.'config', 'auth.php', '');
+					File::update(APPPATH.'config'.DS.Fuel::$env, 'config.php', '');
 
 					Config::save('db', 'db');
+					Config::save('auth', 'auth');
+					Config::save(Fuel::$env.DS.'config.php', 'config');
 
 					foreach($migrate as $param)
 					{
@@ -226,6 +318,10 @@ class Controller_Index extends Controller_Base
 				}
 				catch (\Fuel\Core\Database_Exception $e)
 				{
+					@File::delete(APPPATH.'config'.DS.'db.php');
+					@File::delete(APPPATH.'config'.DS.'auth.php');
+					@File::delete(APPPATH.'config'.DS.Fuel::$env.DS.'config.php');
+
 					\Log::error($e->getMessage());
 					$data['error_message'] = 'エラーが発生しました('.$e->getMessage().') '
 					                       . 'データベースの接続先などを見直してください。';
