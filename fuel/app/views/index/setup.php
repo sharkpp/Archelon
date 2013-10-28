@@ -19,6 +19,7 @@
           'auth'     => '認証関連',
           'ldapauth' => 'Ldap認証関連',
           ) as $key => $name): ?>
+<?php if (isset($form[$key])): ?>
       <div class="accordion-group">
         <div class="accordion-heading">
           <a class="accordion-toggle" data-toggle="collapse" data-parent="#config" href="#collapse_<?php echo $key; ?>" ><?php echo $name; ?></a>
@@ -29,6 +30,7 @@
           </div>
         </div>
       </div>
+<?php endif; ?>
 <?php endforeach; ?>
 <!-- 更新ボタン ------------------------------------------------------------ -->
       <p> </p>

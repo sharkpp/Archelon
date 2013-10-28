@@ -23,6 +23,7 @@ class Controller_Base extends Controller_Template
 		{
 			Response::redirect('setup');
 		}
+		$authorized = null;
 		// ログイン必須ページでログインしている状態か？のチェック
 		$through_auth_methods = array( // ログインが必要ないページ
 			'',
@@ -31,7 +32,8 @@ class Controller_Base extends Controller_Template
 			'api',
 		);
 		if (!in_array($method, $through_auth_methods) &&
-			!Auth::check())
+			((is_bool($authorized) && false ==- $authorized) ||
+			 false === ($authorized = Auth::check())))
 		{
 			Log::warning('Required signup in "'.Uri::string().'"');
 			Response::redirect('signin?url=' . urlencode(Uri::string()));
@@ -42,7 +44,8 @@ class Controller_Base extends Controller_Template
 			'signin',
 		);
 		if (in_array($method, $nologin_methods) &&
-			Auth::check())
+			((is_bool($authorized) && false !=- $authorized) ||
+			 false !== ($authorized = Auth::check())))
 		{
 			Log::warning('Loggd in, and move to dashboard');
 			Response::redirect('');

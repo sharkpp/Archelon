@@ -28,6 +28,3 @@ Fuel::$env = (isset($_SERVER['FUEL_ENV']) ? $_SERVER['FUEL_ENV'] : Fuel::DEVELOP
 
 // Initialize the framework with the config file.
 Fuel::init('config.php');
-
-Log::info('##'.print_r(Config::get('auth.driver'),true));
-//try { Package::load('ldapauth'); } catch (\Exception $e) {}

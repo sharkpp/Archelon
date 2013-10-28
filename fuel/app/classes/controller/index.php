@@ -13,11 +13,11 @@ class Controller_Index extends Controller_Base
 			}
 			else if (Auth::check())
 			{
-				$this->action_dashboard();
+				$this->run_dashboard();
 			}
 			else
 			{
-				$this->action_welcome();
+				$this->run_welcome();
 			}
 	//	}
 	//	catch (\Exception $e)
@@ -166,7 +166,7 @@ class Controller_Index extends Controller_Base
 				),
 				'ldap_secure' => !$use_ldapauth ?: array(
 					'label'      => 'SSLを使用する',
-					'validation' => array('required', 'min_length' => array(1)),
+					'validation' => array(),
 					'form'       => array('type' => 'checkbox'),
 					'default'    => Input::post('ldap_secure', \Input::post() ? '' : Config::get('ldapauth.secure')),
 				),
@@ -224,7 +224,7 @@ class Controller_Index extends Controller_Base
 		{
 			foreach ($form_info as $field => $info)
 			{
-				if (false === $info) {
+				if (!is_array($info)) {
 					continue;
 				}
 				$form[$category][$field] = array(
@@ -288,6 +288,17 @@ class Controller_Index extends Controller_Base
 																$validator->validated('auth_ldap_enable') ? array('ldapauth') : array()
 															));
 
+				Config::set('ldapauth.host',      $validator->validated('ldap_host'));
+				Config::set('ldapauth.port',      $validator->validated('ldap_port'));
+				Config::set('ldapauth.secure',    $validator->validated('ldap_secure'));
+				Config::set('ldapauth.username',  $validator->validated('ldap_username'));
+				Config::set('ldapauth.password',  $validator->validated('ldap_password'));
+				Config::set('ldapauth.basedn',    $validator->validated('ldap_basedn'));
+				Config::set('ldapauth.account',   $validator->validated('ldap_account'));
+				Config::set('ldapauth.email',     $validator->validated('ldap_email'));
+				Config::set('ldapauth.firstname', $validator->validated('ldap_firstname'));
+				Config::set('ldapauth.db.table_name', 'users_ldapauth');
+
 				// マイグレーション
 				$migrate = array();
 				$migrate[] = array('name' => 'default', 'type' => 'app');
@@ -303,10 +314,12 @@ class Controller_Index extends Controller_Base
 					// ファイルがないとcoreやpackagesが優先されるので、空ファイルを設置
 					File::update(APPPATH.'config', 'db.php', '');
 					File::update(APPPATH.'config', 'auth.php', '');
+					File::update(APPPATH.'config', 'ldapauth.php', '');
 					File::update(APPPATH.'config'.DS.Fuel::$env, 'config.php', '');
 
 					Config::save('db', 'db');
 					Config::save('auth', 'auth');
+					Config::save('ldapauth', 'ldapauth');
 					Config::save(Fuel::$env.DS.'config.php', 'config');
 
 					foreach($migrate as $param)
@@ -318,10 +331,6 @@ class Controller_Index extends Controller_Base
 				}
 				catch (\Fuel\Core\Database_Exception $e)
 				{
-					@File::delete(APPPATH.'config'.DS.'db.php');
-					@File::delete(APPPATH.'config'.DS.'auth.php');
-					@File::delete(APPPATH.'config'.DS.Fuel::$env.DS.'config.php');
-
 					\Log::error($e->getMessage());
 					$data['error_message'] = 'エラーが発生しました('.$e->getMessage().') '
 					                       . 'データベースの接続先などを見直してください。';
@@ -335,6 +344,11 @@ class Controller_Index extends Controller_Base
 					\Log::error($e->getMessage());
 					$data['error_message'] = 'エラーが発生しました('.$e->getMessage().')';
 				}
+				// 更新してしまったファイルを削除
+				try { @File::delete(APPPATH.'config'.DS.'db.php'); } catch (\Exception $e) {}
+				try { @File::delete(APPPATH.'config'.DS.'auth.php'); } catch (\Exception $e) {}
+				try { @File::delete(APPPATH.'config'.DS.'ldapauth.php'); } catch (\Exception $e) {}
+				try { @File::delete(APPPATH.'config'.DS.Fuel::$env.DS.'config.php'); } catch (\Exception $e) {}
 			}
 			else
 			{
@@ -362,15 +376,16 @@ class Controller_Index extends Controller_Base
 		$this->template->content = View::forge('index/about');
 	}
 
-	public function action_welcome()
+	public function run_welcome()
 	{
 		$this->template->content = View::forge('index/welcome');
 	}
 
-	public function action_dashboard()
+	public function run_dashboard()
 	{
+		$user_id = \Auth::instance()->get_user_id();
 		$accounts = \Model_Account::query()
-						->where('user_id', \Auth::instance()->get_user_id()[1])
+						->where('user_id', $user_id[1])
 					//	->related('connector')
 						->get();
 
@@ -471,23 +486,87 @@ class Controller_Index extends Controller_Base
 
 	public function action_signin()
 	{
-		$val = Validation::forge('validation');
-		// ユーザー名、パスワード、いずれも必須
-		$val->add('username', __('Username'))
-		    ->add_rule('required');
-		$val->add('password', __('Password'))
-		    ->add_rule('required')
-		    ->add_rule('min_length', 1);
-
 		$data['username_error_message'] =
 		$data['password_error_message'] =
 		$data['error_message']          = '';
 
+		$driver_type_list = array();
+		foreach (Config::get('auth.driver', array()) as $driver)
+		{
+			switch ($driver)
+			{
+			case 'Simpleauth': $driver_type_list[$driver] =  'パスワード認証'; break;
+			case 'Ldapauth': $driver_type_list[$driver] =  'Ldap認証'; break;
+			}
+		}
+
+		$signup_form = array(
+				'username' => array(
+					'label'      => 'ユーザー名',
+					'validation' => array('required', 'min_length' => array(1)),
+					'form'       => array('type' => 'text'),
+					'default'    => Input::post('username', ''),
+				),
+				'password' => array(
+					'label'      => 'パスワード',
+					'validation' => array(),
+					'form'       => array('type' => 'password'),
+					'default'    => Input::post('password', ''),
+				),
+				'driver' => count($driver_type_list) < 2?:array(
+					'label'      => '認証方式',
+					'validation' => array('required'),
+					'form'       => array('type' => 'select', 'options' => $driver_type_list),
+					'default'    => Input::post('driver', ''),
+				),
+			);
+
+		$validator = \Validation::forge('validation');
+
+		// 入力フォームを構築
+		$form = array();
+		foreach ($signup_form as $field => $info)
+		{
+			if (!is_array($info)) {
+				continue;
+			}
+			$form[$field] = array(
+					'name'     => $field,
+					'label'    => \Arr::get($info, 'label', ''),
+					'form'     => \Arr::get($info, 'form', ''),
+					'required' => false,
+					'value'    => \Input::post($field, \Arr::get($info, 'default', '')),
+					'error_message' => '',
+				);
+			$is_required = &$form[$field]['required'];
+			// バリデーションルールを追加
+			$validat_field = $validator->add($field, $form[$field]['label']);
+			$info['validation'] = \Arr::get($info, 'validation', array());
+			array_walk($info['validation'],
+				function($value, $key) use (&$validat_field, &$is_required) {
+					!is_int($key) || 'required' != $value ?: $is_required = true;
+					call_user_func_array(
+							array($validat_field, 'add_rule'),
+							is_int($key) ? array($value) : array_merge(array($key), $value)
+						);
+				});
+		}
+
 		if (Input::post())
 		{
-			if ($val->run())
+			// 入力内容の検証
+			if ($validator->run())
 			{
-				if (Auth::login())
+				if (count($driver_type_list) < 2)
+				{ // フォームに存在しないので自動でセット
+					$driver = array_keys($driver_type_list);
+					$driver = array_shift($driver);
+				}
+				else
+				{
+					$driver = $validator->validated('driver');
+				}
+				if (Auth::instance($driver)->login())
 				{
 					Response::redirect(Str::lower(urldecode(Input::get('url'))));
 				}
@@ -498,12 +577,19 @@ class Controller_Index extends Controller_Base
 			}
 			else
 			{
-				foreach (array('username', 'password') as $field)
+				foreach ($form as $category => &$form_info)
 				{
-					$data[$field . '_error_message'] = $val->validated($field) ? '' : $val->error($field);
+					foreach ($form_info as &$field)
+					{
+						$field['error_message']
+							= $validator->validated($field['name'])
+								? '' : $validator->error($field['name']);
+					}
 				}
 			}
 		}
+
+		$data['form'] = $form;
 
 		$this->template->breadcrumb = array('サインイン' => 'index/signin');
 		$this->template->title = 'サインイン';

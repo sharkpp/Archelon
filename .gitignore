@@ -15,4 +15,6 @@ build
 /fuel/app/cache/*/*
 /fuel/app/config/crypt.php
 nbproject/
+._*.*
+fuel/app/modules/*
 
