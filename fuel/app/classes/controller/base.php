@@ -73,6 +73,15 @@ class Controller_Base extends Controller_Template
 		return 0 !== Config::get('migrations.version.app.default', 0);
 	}
 
+	// Ldapのみ有効？
+	public static function is_ldap_only()
+	{
+		$auth_driver = Config::get('auth.driver', array());
+		return 
+			1 == count($auth_driver) &&
+			in_array('Ldapauth', $auth_driver);
+	}
+
 	protected function response_404()
 	{
 		$this->template->title = '404 Not Found';

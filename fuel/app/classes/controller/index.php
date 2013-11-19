@@ -140,15 +140,45 @@ class Controller_Index extends Controller_Base
 			'auth' => array(
 				'auth_simple_enable' => array(
 					'label'      => 'ログイン認証を使う',
-					'validation' => array('required_whichever' => array('auth_driver')),
+					'validation' => array('required_whichever' => array('auth_driver'), 'match_field_value' => array('auth_driver', 'Simpleauth')),
 					'form'       => array('type' => 'checkbox'),
 					'default'    => Input::post('auth_simple_enable', \Input::post() ? false : true),
 				),
 				'auth_ldap_enable' => !$use_ldapauth ?: array(
 					'label'      => 'LDAP認証を使う',
-					'validation' => array('required_whichever' => array('auth_driver')),
+					'validation' => array('required_whichever' => array('auth_driver'), 'match_field_value' => array('auth_driver', 'Ldapauth')),
 					'form'       => array('type' => 'checkbox'),
 					'default'    => Input::post('auth_ldap_enable', \Input::post() ? false : true),
+				),
+				'auth_admin_user' => array(
+					'label'      => '管理者ユーザー名',
+					'validation' => array('required', 'min_length' => array(1)),
+					'form'       => array('type' => 'text'),
+					'default'    => Input::post('auth_admin_user', 'admin'),
+				),
+				'auth_admin_pass' => array(
+					'label'      => '管理者パスワード',
+					'validation' => array('required'),
+					'form'       => array('type' => 'password'),
+					'default'    => Input::post('auth_admin_pass', ''),
+				),
+				'auth_admin_pass2' => array(
+					'label'      => '確認',
+					'validation' => array('required', 'match_field' => array('auth_admin_pass')),
+					'form'       => array('type' => 'password'),
+					'default'    => Input::post('auth_admin_pass2', ''),
+				),
+				'auth_admin_email' => array(
+					'label'      => '管理者メールアドレス',
+					'validation' => array('valid_email', 'match_field_value' => array('auth_driver', 'Simpleauth')),
+					'form'       => array('type' => 'text'),
+					'default'    => Input::post('auth_admin_email', ''),
+				),
+				'auth_driver' => array(
+					'label'      => '認証方式',
+					'validation' => array('required'),
+					'form'       => array('type' => 'select', 'options' => array('Simpleauth' => 'パスワード認証', 'Ldapauth' => 'Ldap認証')),
+					'default'    => Input::post('auth_driver', 'Simpleauth'),
 				),
 			),
 			'ldapauth' => array(
@@ -217,6 +247,7 @@ class Controller_Index extends Controller_Base
 
 		$validator = \Validation::forge('validation');
 		$validator->add_callable('Validation_Required'); // required_whichever用
+		$validator->add_callable('Validation_Match');    // match_field_value用
 
 		// 入力フォームを構築
 		$form = array();
@@ -297,6 +328,7 @@ class Controller_Index extends Controller_Base
 				Config::set('ldapauth.account',   $validator->validated('ldap_account'));
 				Config::set('ldapauth.email',     $validator->validated('ldap_email'));
 				Config::set('ldapauth.firstname', $validator->validated('ldap_firstname'));
+				Config::set('ldapauth.lastname',  $validator->validated('ldap_lastname'));
 				Config::set('ldapauth.db.table_name', 'users_ldapauth');
 
 				// マイグレーション
@@ -321,6 +353,37 @@ class Controller_Index extends Controller_Base
 					Config::save('auth', 'auth');
 					Config::save('ldapauth', 'ldapauth');
 					Config::save(Fuel::$env.DS.'config.php', 'config');
+
+					// 初期ユーザーを作成
+					$auth_driver = $validator->validated('auth_driver');
+					if ('Simpleauth' == $auth_driver)
+					{ // パスワード認証の場合は作成してから認証
+						// saltを初期化
+						$salt = '';
+						for ($i = 0; $i < 8; $i++)
+						{
+							$salt .= pack('n', mt_rand(0, 0xFFFF));
+						}
+						$salt = base64_encode($salt);
+
+						if (false === Auth::create_user(
+										$validator->validated('auth_admin_user'),
+										$validator->validated('auth_admin_pass'),
+										$validator->validated('email'),
+										100, 
+										array(
+											'salt' => $salt,
+										)
+									))
+						{
+							throw new Exception('ユーザーの作成に失敗');
+						}
+					}
+					if (!Auth::instance($auth_driver)->login($validator->validated('auth_admin_user'),
+					                                         $validator->validated('auth_admin_pass')))
+					{
+						throw new Exception('認証に失敗');
+					}
 
 					foreach($migrate as $param)
 					{
@@ -408,25 +471,72 @@ class Controller_Index extends Controller_Base
 
 	public function action_signup()
 	{
-		$val = Validation::forge('validation');
-		// ユーザー名、パスワード、メールアドレス、いずれも必須
-		$val->add('username', __('Username'))
-		    ->add_rule('required');
-		$val->add('password', __('Password'))
-		    ->add_rule('required')
-		    ->add_rule('min_length', 1);
-		$val->add('email', __('Email'))
-		    ->add_rule('required')
-		    ->add_rule('valid_email');
+		if (self::is_ldap_only())
+		{
+			Response::redirect('signin');
+		}
 
 		$data['username_error_message'] =
 		$data['password_error_message'] =
 		$data['email_error_message']    =
 		$data['error_message']          = '';
 
+		$signup_form = array(
+				'username' => array(
+					'label'      => 'ユーザー名',
+					'validation' => array('required', 'min_length' => array(1)),
+					'form'       => array('type' => 'text'),
+					'default'    => Input::post('username', ''),
+				),
+				'password' => array(
+					'label'      => 'パスワード',
+					'validation' => array(),
+					'form'       => array('type' => 'password'),
+					'default'    => Input::post('password', ''),
+				),
+				'email' => array(
+					'label'      => 'メールアドレス',
+					'validation' => array('required', 'valid_email'),
+					'form'       => array('type' => 'text'),
+					'default'    => Input::post('email', ''),
+				),
+			);
+
+		$validator = \Validation::forge('validation');
+
+		// 入力フォームを構築
+		$form = array();
+		foreach ($signup_form as $field => $info)
+		{
+			if (!is_array($info)) {
+				continue;
+			}
+			$form[$field] = array(
+					'name'     => $field,
+					'label'    => \Arr::get($info, 'label', ''),
+					'form'     => \Arr::get($info, 'form', ''),
+					'required' => false,
+					'value'    => \Input::post($field, \Arr::get($info, 'default', '')),
+					'error_message' => '',
+				);
+			$is_required = &$form[$field]['required'];
+			// バリデーションルールを追加
+			$validat_field = $validator->add($field, $form[$field]['label']);
+			$info['validation'] = \Arr::get($info, 'validation', array());
+			array_walk($info['validation'],
+				function($value, $key) use (&$validat_field, &$is_required) {
+					!is_int($key) || 'required' != $value ?: $is_required = true;
+					call_user_func_array(
+							array($validat_field, 'add_rule'),
+							is_int($key) ? array($value) : array_merge(array($key), $value)
+						);
+				});
+		}
+
 		if (Input::post())
 		{
-			if ($val->run())
+			// 入力内容の検証
+			if ($validator->run())
 			{
 				try
 				{
@@ -439,9 +549,9 @@ class Controller_Index extends Controller_Base
 					$salt = base64_encode($salt);
 
 					if (false !== Auth::create_user(
-									$val->validated('username'),
-									$val->validated('password'),
-									$val->validated('email'),
+									$validator->validated('username'),
+									$validator->validated('password'),
+									$validator->validated('email'),
 									Auth\Model\Auth_User::query()->count() ? 1 : 100, // 一人もいない場合は管理者とする
 									array(
 										'salt' => $salt,
@@ -472,12 +582,19 @@ class Controller_Index extends Controller_Base
 			}
 			else
 			{
-				foreach (array('username', 'password', 'email') as $field)
+				foreach ($form as $category => &$form_info)
 				{
-					$data[$field . '_error_message'] = $val->validated($field) ? '' : $val->error($field);
+					foreach ($form_info as &$field)
+					{
+						$field['error_message']
+							= $validator->validated($field['name'])
+								? '' : $validator->error($field['name']);
+					}
 				}
 			}
 		}
+
+		$data['form'] = $form;
 
 		$this->template->breadcrumb = array('サインアップ' => 'index/signup');
 		$this->template->title = 'サインアップ';
@@ -500,7 +617,7 @@ class Controller_Index extends Controller_Base
 			}
 		}
 
-		$signup_form = array(
+		$signin_form = array(
 				'username' => array(
 					'label'      => 'ユーザー名',
 					'validation' => array('required', 'min_length' => array(1)),
@@ -525,7 +642,7 @@ class Controller_Index extends Controller_Base
 
 		// 入力フォームを構築
 		$form = array();
-		foreach ($signup_form as $field => $info)
+		foreach ($signin_form as $field => $info)
 		{
 			if (!is_array($info)) {
 				continue;

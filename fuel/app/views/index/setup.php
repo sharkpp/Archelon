@@ -36,7 +36,7 @@
       <p> </p>
       <div class="control-group">
         <div class="controls">
-          <button type="submit" class="btn btn-primary">保存</button>
+          <button type="submit" class="btn btn-primary">インストール</button>
         </div>
       </div>
     </div>
