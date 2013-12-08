@@ -76,10 +76,47 @@ class Controller_Base extends Controller_Template
 	// Ldapのみ有効？
 	public static function is_ldap_only()
 	{
-		$auth_driver = Config::get('auth.driver', array());
+		$auth_drivers = Config::get('auth.driver', array());
 		return 
-			1 == count($auth_driver) &&
-			in_array('Ldapauth', $auth_driver);
+			1 == count($auth_drivers) &&
+			in_array('Ldapauth', $auth_drivers);
+	}
+
+	// 管理者？
+	public static function is_admin()
+	{
+		return self::has_access('account.read');
+	}
+
+	// 表示名を取得
+	public static function get_screen_name()
+	{
+		foreach (Config::get('auth.driver', array()) as $auth_driver)
+		{
+			$auth_inst = Auth::instance($auth_driver);
+			$login_user = $auth_inst->get_user_id();
+			if (false !== $login_user)
+			{
+				return $auth_inst->get_screen_name();
+			}
+		}
+		return '';
+	}
+
+	// アクセス権がある？
+	public static function has_access($rights)
+	{
+		foreach (Config::get('auth.driver', array()) as $auth_driver)
+		{
+			$auth_inst = Auth::instance($auth_driver);
+			$login_user = $auth_inst->get_user_id();
+			if (false !== $login_user &&
+				$auth_inst->has_access($rights))
+			{
+				return true;
+			}
+		}
+		return false;
 	}
 
 	protected function response_404()

@@ -42,7 +42,7 @@ return array(
 	/**
 	 * This will allow you to use the group & acl driver for non-logged in users
 	 */
-	'guest_login' => true,
+	'guest_login' => false,
 
 	/**
 	 * This will allow the same user to be logged in multiple times.
@@ -86,6 +86,10 @@ return array(
 		 * 50   => array('name' => 'Moderators', 'roles' => array('user', 'moderator')),
 		 * 100  => array('name' => 'Administrators', 'roles' => array('user', 'moderator', 'admin')),
 		 */
+		-1   => array('name' => 'Banned', 'roles' => array('banned')),
+		0    => array('name' => 'Guests', 'roles' => array('guest')),
+		1    => array('name' => 'Users',  'roles' => array('guest', 'user')),
+		100  => array('name' => 'Administrators', 'roles' => array('guest', 'user', 'admin')),
 	),
 
 	/**
@@ -110,6 +114,10 @@ return array(
 		 * Global allow by assigning true to a role (use with care!):
 		 *   'super' => true,
 		 */
+		'guest'  => array('api' => array('read')),
+		'user'   => array('docs' => array('read')),
+		'banned' => false,
+		'admin'  => true,
 	),
 
 	/**

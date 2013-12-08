@@ -48,27 +48,21 @@
               <li><a href="<?php echo Uri::create('about'); ?>"><i class="icon-info-sign"></i> About</a></li>
 <?php if (\Controller_Base::authorized()): /* ログイン済み ------------------------------- */ ?>
               <li class="<?php echo 'account/connect'==Uri::string()?'active':''; ?>"><a href="<?php echo Uri::create('account/connect'); ?>"><i class="icon-plus-sign"></i> アカウント追加</a></li>
+<?php if (\Controller_Base::is_admin()): /* 管理者のみ ------------------------------- */ ?>
               <li class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-cog"></i> 管理 <b class="caret"></b></a>
                 <ul class="dropdown-menu">
                   <li><a href="<?php echo Uri::create('connector/reload'); ?>" data-toggle="modal" data-target="#modal_connector_reload"><i class="icon-refresh"></i> コネクタの再読み込み</a></li>
                   <li><a href="<?php echo Uri::create('connector/admin'); ?>"><i class="icon-cog"></i> コネクタの管理</a></li>
-<!--
-                  <li><a href="#">Another action</a></li>
-                  <li><a href="#">Something else here</a></li>
-                  <li class="divider"></li>
-                  <li class="nav-header">Nav header</li>
-                  <li><a href="#">Separated link</a></li>
-                  <li><a href="#">One more separated link</a></li>
--->
                 </ul>
               </li>
+<?php endif; /* -------------------------------------------------------------------------- */ ?>
 <?php endif; /* -------------------------------------------------------------------------- */ ?>
             </ul>
 <?php if (\Controller_Base::authorized()): /* ログイン済み ------------------------------- */ ?>
             <ul class="nav pull-right">
               <li class="dropdown">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-user"></i> <?php echo Auth::instance()->get_screen_name(); ?> <b class="caret"></b></a>
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-user"></i> <?php echo \Controller_Base::get_screen_name(); ?> <b class="caret"></b></a>
                 <ul class="dropdown-menu">
                   <li><a href="<?php echo Uri::create('user/config'); ?>"><i class="icon-cog"></i> 設定</a></li>
                   <li class="divider"></li>

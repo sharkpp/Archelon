@@ -163,7 +163,7 @@ class Controller_Index extends Controller_Base
 					'default'    => Input::post('auth_admin_pass', ''),
 				),
 				'auth_admin_pass2' => array(
-					'label'      => '確認',
+					'label'      => '管理者パスワード(確認)',
 					'validation' => array('required', 'match_field' => array('auth_admin_pass')),
 					'form'       => array('type' => 'password'),
 					'default'    => Input::post('auth_admin_pass2', ''),
@@ -280,6 +280,7 @@ class Controller_Index extends Controller_Base
 					});
 			}
 		}
+
 		if (\Input::post())
 		{
 			// 入力内容の検証
