@@ -139,7 +139,7 @@ class Controller_Index extends Controller_Base
 			),
 			'auth' => array(
 				'auth_simple_enable' => array(
-					'label'      => 'ログイン認証を使う',
+					'label'      => 'パスワード認証を使う',
 					'validation' => array('required_whichever' => array('auth_driver'), 'match_field_value' => array('auth_driver', 'Simpleauth')),
 					'form'       => array('type' => 'checkbox'),
 					'default'    => Input::post('auth_simple_enable', \Input::post() ? false : true),
@@ -355,6 +355,11 @@ class Controller_Index extends Controller_Base
 					Config::save('ldapauth', 'ldapauth');
 					Config::save(Fuel::$env.DS.'config.php', 'config');
 
+					foreach($migrate as $param)
+					{
+						Migrate::latest($param['name'], $param['type']);
+					}
+
 					// 初期ユーザーを作成
 					$auth_driver = $validator->validated('auth_driver');
 					if ('Simpleauth' == $auth_driver)
@@ -367,10 +372,10 @@ class Controller_Index extends Controller_Base
 						}
 						$salt = base64_encode($salt);
 
-						if (false === Auth::create_user(
+						if (false === Auth::instance($auth_driver)->create_user(
 										$validator->validated('auth_admin_user'),
 										$validator->validated('auth_admin_pass'),
-										$validator->validated('email'),
+										$validator->validated('auth_admin_email'),
 										100, 
 										array(
 											'salt' => $salt,
@@ -385,10 +390,9 @@ class Controller_Index extends Controller_Base
 					{
 						throw new Exception('認証に失敗');
 					}
-
-					foreach($migrate as $param)
+					if (!Auth::instance($auth_driver)->update_user(array('group' => 100)))
 					{
-						Migrate::latest($param['name'], $param['type']);
+						throw new Exception('ユーザー情報の更新に失敗');
 					}
 
 					Response::redirect('');
